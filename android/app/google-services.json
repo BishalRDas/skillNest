@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "380595799896",
+    "project_id": "skillnest-9906e",
+    "storage_bucket": "skillnest-9906e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380595799896:android:6b529275ffb7de8d8b872d",
+        "android_client_info": {
+          "package_name": "com.example.skillnest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAo7Wkg7z-5joLzPiuPvVaup0Nd0cWDQO0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
