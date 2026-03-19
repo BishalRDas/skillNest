@@ -108,11 +108,20 @@ class WorkerAccountTab extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
           children: [
             /// PROFILE
+            /// PROFILE
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withOpacity(0.92),
                 borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+                border: Border.all(color: Colors.white.withOpacity(0.4)),
               ),
               child: Row(
                 children: [
@@ -129,26 +138,26 @@ class WorkerAccountTab extends StatelessWidget {
                       Text(
                         data['name'] ?? "",
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: Colors.black54,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                       Text(
                         data['email'] ?? "",
-                        style: const TextStyle(color: Colors.white70),
+                        style: const TextStyle(color: Colors.black54),
                       ),
                       Text(
                         data['phone'] ?? "",
-                        style: const TextStyle(color: Colors.white70),
+                        style: const TextStyle(color: Colors.black54),
                       ),
                       Text(
                         "Skill: ${data['skill'] ?? ""}",
-                        style: const TextStyle(color: Colors.white70),
+                        style: const TextStyle(color: Colors.black54),
                       ),
                       Text(
                         "Exp: ${data['experience'] ?? ""}",
-                        style: const TextStyle(color: Colors.white70),
+                        style: const TextStyle(color: Colors.black54),
                       ),
 
                       const SizedBox(height: 5),
@@ -169,7 +178,7 @@ class WorkerAccountTab extends StatelessWidget {
                         children: [
                           const Text(
                             "Phone Verified: ",
-                            style: TextStyle(color: Colors.white70),
+                            style: TextStyle(color: Colors.black54),
                           ),
                           Icon(
                             isPhoneVerified ? Icons.verified : Icons.error,
@@ -196,14 +205,38 @@ class WorkerAccountTab extends StatelessWidget {
             ),
 
             /// AVAILABILITY
-            _tile(
-              Icons.toggle_on,
-              isAvailable ? "Set Offline" : "Set Available",
-              onTap: () async {
-                await firestore.collection("workers").doc(uid).update({
-                  "isAvailable": !isAvailable,
-                });
-              },
+            Container(
+              margin: const EdgeInsets.only(bottom: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.toggle_on, color: Color(0xff1D4ED8)),
+                      const SizedBox(width: 10),
+                      Text(
+                        isAvailable ? "Available (Online)" : "Offline",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+
+                  Switch(
+                    value: isAvailable,
+                    activeColor: const Color(0xff1D4ED8),
+                    onChanged: (value) async {
+                      await firestore.collection("workers").doc(uid).update({
+                        "isAvailable": value,
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
 
             /// OTP VERIFY
