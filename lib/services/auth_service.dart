@@ -3,62 +3,107 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
   final FirebaseAuth auth = FirebaseAuth.instance;
-
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+  /// ===============================
   /// REGISTER
-
-  Future register(
+  /// ===============================
+  Future<String> register(
     String name,
     String email,
     String password,
     String role,
   ) async {
-    UserCredential user = await auth.createUserWithEmailAndPassword(
-      email: email.trim(),
-      password: password,
-    );
+    try {
+      UserCredential user = await auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
 
-    final uid = user.user!.uid;
+      final uid = user.user!.uid;
 
-    // Save in users collection
-    await firestore.collection("users").doc(uid).set({
-      "name": name,
-      "email": email.trim(),
-      "role": role,
-    });
-
-    // ✅ If role is Worker → also create workers document
-    if (role == "Worker") {
-      await firestore.collection("workers").doc(uid).set({
+      /// Save user data
+      await firestore.collection("users").doc(uid).set({
         "name": name,
         "email": email.trim(),
-        "phone": "",
-        "skill": "",
-        "experience": "",
-        "isAvailable": true,
-        "isApproved": false,
+        "role": role,
         "createdAt": FieldValue.serverTimestamp(),
       });
+
+      /// If Worker → create worker profile
+      if (role == "Worker") {
+        await firestore.collection("workers").doc(uid).set({
+          "name": name,
+          "email": email.trim(),
+          "phone": "",
+          "skill": "",
+          "experience": "",
+          "isAvailable": true,
+          "isApproved": false,
+          "createdAt": FieldValue.serverTimestamp(),
+        });
+      }
+
+      return "Success";
+    } on FirebaseAuthException catch (e) {
+      print("Register Error: ${e.code}");
+
+      if (e.code == 'email-already-in-use') {
+        return "Email already in use";
+      } else if (e.code == 'weak-password') {
+        return "Password too weak";
+      } else if (e.code == 'invalid-email') {
+        return "Invalid email";
+      } else {
+        return "Registration failed";
+      }
+    } catch (e) {
+      print("General Register Error: $e");
+      return "Something went wrong";
     }
   }
 
+  /// ===============================
   /// LOGIN
-
+  /// ===============================
   Future<String> login(String email, String password) async {
-    UserCredential user = await auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      UserCredential user = await auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
 
-    var doc = await firestore.collection("users").doc(user.user!.uid).get();
+      final uid = user.user!.uid;
 
-    return doc["role"];
+      final doc = await firestore.collection("users").doc(uid).get();
+
+      if (!doc.exists) {
+        return "User data not found";
+      }
+
+      return doc["role"];
+    } on FirebaseAuthException catch (e) {
+      print("Login Error: ${e.code}");
+
+      if (e.code == 'user-not-found') {
+        return "No user found";
+      } else if (e.code == 'wrong-password') {
+        return "Wrong password";
+      } else if (e.code == 'invalid-email') {
+        return "Invalid email";
+      } else {
+        return "Login failed";
+      }
+    } catch (e) {
+      print("General Login Error: $e");
+      return "Something went wrong";
+    }
   }
 
-  /// LOGOUT (IMPORTANT)
-
-  Future logout() async {
+  /// ===============================
+  /// LOGOUT
+  /// ===============================
+  Future<void> logout() async {
     await auth.signOut();
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -6,10 +7,15 @@ class DatabaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // ===============================
-  // GET ALL WORKERS
+  // GET ALL WORKERS (FILTERED)
   // ===============================
   Stream<QuerySnapshot> getWorkers() {
-    return _firestore.collection("workers").snapshots();
+    return _firestore
+        .collection('workers')
+        .where('isApproved', isEqualTo: true)
+        .where('isAvailable', isEqualTo: true)
+        .where('isPhoneVerified', isEqualTo: true)
+        .snapshots();
   }
 
   // ===============================
@@ -27,9 +33,15 @@ class DatabaseService {
       "workerId": workerId.trim(),
       "userEmail": user.email,
       "workerName": workerName,
-      "skill": skill,
+      "skill": skill.isEmpty ? "General Service" : skill,
       "status": "pending",
-      "date": FieldValue.serverTimestamp(),
+
+      // 🔥 NEW
+      "jobOtp": null,
+      "otpVerified": false,
+
+      "createdAt": FieldValue.serverTimestamp(),
+      "updatedAt": FieldValue.serverTimestamp(),
     });
   }
 
@@ -72,11 +84,71 @@ class DatabaseService {
   }
 
   // ===============================
-  // ACCEPT JOB
+  // 🔐 GENERATE OTP
+  // ===============================
+  String _generateOtp() {
+    final random = Random();
+    return (100000 + random.nextInt(900000)).toString();
+  }
+
+  // ===============================
+  // ACCEPT JOB (WITH OTP)
   // ===============================
   Future acceptJob(String jobId) async {
+    final otp = _generateOtp();
+
     await _firestore.collection("jobs").doc(jobId).update({
       "status": "accepted",
+      "jobOtp": otp, // 🔥 OTP generated here
+      "otpVerified": false,
+      "updatedAt": FieldValue.serverTimestamp(),
+    });
+  }
+
+  // ===============================
+  // VERIFY OTP (WORKER SIDE)
+  // ===============================
+  Future<bool> verifyJobOtp({
+    required String jobId,
+    required String enteredOtp,
+  }) async {
+    final doc = await _firestore.collection("jobs").doc(jobId).get();
+
+    final data = doc.data();
+
+    if (data == null) return false;
+
+    final realOtp = data['jobOtp'];
+
+    if (enteredOtp == realOtp) {
+      await _firestore.collection("jobs").doc(jobId).update({
+        "otpVerified": true,
+        "updatedAt": FieldValue.serverTimestamp(),
+      });
+
+      return true;
+    }
+
+    return false;
+  }
+
+  // ===============================
+  // COMPLETE JOB (USER SIDE)
+  // ===============================
+  Future completeJob(String jobId) async {
+    final doc = await _firestore.collection("jobs").doc(jobId).get();
+
+    final data = doc.data();
+
+    if (data == null) return;
+
+    if (data['otpVerified'] != true) {
+      throw Exception("OTP not verified");
+    }
+
+    await _firestore.collection("jobs").doc(jobId).update({
+      "status": "completed",
+      "updatedAt": FieldValue.serverTimestamp(),
     });
   }
 
@@ -86,6 +158,7 @@ class DatabaseService {
   Future rejectJob(String jobId) async {
     await _firestore.collection("jobs").doc(jobId).update({
       "status": "rejected",
+      "updatedAt": FieldValue.serverTimestamp(),
     });
   }
 

@@ -4,6 +4,7 @@ import 'login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/database_service.dart';
+import '../services/otp_service.dart'; // ✅ NEW
 
 class UserHome extends StatefulWidget {
   const UserHome({super.key});
@@ -12,165 +13,365 @@ class UserHome extends StatefulWidget {
   State<UserHome> createState() => _UserHomeState();
 }
 
-class _UserHomeState extends State<UserHome>
-    with SingleTickerProviderStateMixin {
-  late TabController tabController;
+class _UserHomeState extends State<UserHome> {
+  int currentIndex = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    tabController = TabController(length: 3, vsync: this);
-  }
+  final pages = [AccountTab(), const HistoryTab(), const SearchTab()];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("SkillNest"),
-
-        centerTitle: true,
-
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xff4A90E2), Color(0xff6FB1FC)],
+      backgroundColor: const Color(0xffF3F4F6),
+      body: Stack(
+        children: [
+          Container(
+            height: 220,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xff1D4ED8), Color(0xff2563EB)],
+              ),
             ),
           ),
+          SafeArea(child: pages[currentIndex]),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(15),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(blurRadius: 25, color: Colors.black.withOpacity(0.08)),
+          ],
         ),
-
-        bottom: TabBar(
-          controller: tabController,
-
-          indicatorColor: Colors.white,
-
-          tabs: const [
-            Tab(icon: Icon(Icons.person), text: "Account"),
-
-            Tab(icon: Icon(Icons.history), text: "History"),
-
-            Tab(icon: Icon(Icons.search), text: "Search"),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _navItem(Icons.person, 0),
+            _navItem(Icons.history, 1),
+            _navItem(Icons.search, 2),
           ],
         ),
       ),
+    );
+  }
 
-      body: TabBarView(
-        controller: tabController,
+  Widget _navItem(IconData icon, int index) {
+    bool selected = currentIndex == index;
 
-        children: [AccountTab(), const HistoryTab(), const SearchTab()],
+    return GestureDetector(
+      onTap: () => setState(() => currentIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xff1D4ED8) : Colors.transparent,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Icon(icon, color: selected ? Colors.white : Colors.grey),
       ),
     );
   }
 }
 
-/// ACCOUNT TAB
+/// ================= ACCOUNT =================
 
 class AccountTab extends StatelessWidget {
   AccountTab({super.key});
 
   final AuthService auth = AuthService();
+  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final uid = firebaseAuth.currentUser!.uid;
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
+    return StreamBuilder<DocumentSnapshot>(
+      stream: firestore.collection("users").doc(uid).snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-        child: Column(
+        var data = snapshot.data!.data() as Map<String, dynamic>;
+
+        String name = data["name"] ?? "No Name";
+        String email = data["email"] ?? "No Email";
+        String phone = data["phone"] ?? "";
+        bool isVerified = data["isPhoneVerified"] ?? false;
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
           children: [
-            const SizedBox(height: 10),
-
-            const CircleAvatar(
-              radius: 55,
-              backgroundColor: Colors.blue,
-              child: Icon(Icons.person, size: 60, color: Colors.white),
-            ),
-
-            const SizedBox(height: 15),
-
-            const Text(
-              "User Name",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 5),
-
-            const Text(
-              "user@email.com",
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+            /// PROFILE CARD
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 32,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, color: Color(0xff1D4ED8)),
+                  ),
+                  const SizedBox(width: 15),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        email,
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      if (phone.isNotEmpty)
+                        Row(
+                          children: [
+                            Text(
+                              phone,
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            const SizedBox(width: 6),
+                            Icon(
+                              isVerified ? Icons.verified : Icons.error,
+                              size: 16,
+                              color: isVerified
+                                  ? Colors.greenAccent
+                                  : Colors.redAccent,
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 30),
 
-            SizedBox(
-              width: width,
+            _tile(
+              Icons.edit,
+              "Edit Profile",
+              onTap: () {
+                _showEditDialog(context, uid, data);
+              },
+            ),
 
-              child: Card(
-                elevation: 5,
-
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.edit, color: Colors.blue),
-
-                        title: const Text("Edit Profile"),
-
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                      ),
-
-                      const Divider(),
-
-                      ListTile(
-                        leading: const Icon(Icons.settings, color: Colors.blue),
-
-                        title: const Text("Settings"),
-
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                      ),
-
-                      const Divider(),
-
-                      /// LOGOUT BUTTON
-                      ListTile(
-                        leading: const Icon(Icons.logout, color: Colors.red),
-
-                        title: const Text("Logout"),
-
-                        onTap: () async {
-                          await auth.logout();
-
-                          Navigator.pushAndRemoveUntil(
-                            context,
-
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen(),
-                            ),
-
-                            (route) => false,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+            /// 🔥 VERIFY PHONE
+            if (!isVerified)
+              _tile(
+                Icons.phone_android,
+                "Verify Phone Number",
+                onTap: () {
+                  _showOtpDialog(context, uid);
+                },
               ),
+
+            _tile(Icons.settings, "Settings"),
+
+            _tile(
+              Icons.logout,
+              "Logout",
+              isDanger: true,
+              onTap: () async {
+                await auth.logout();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  /// EDIT PROFILE (PHONE LOCKED)
+  void _showEditDialog(
+    BuildContext context,
+    String uid,
+    Map<String, dynamic> data,
+  ) {
+    TextEditingController nameController = TextEditingController(
+      text: data["name"],
+    );
+    TextEditingController phoneController = TextEditingController(
+      text: data["phone"] ?? "",
+    );
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text("Edit Profile"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Name"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: phoneController,
+                enabled: false, // 🔥 LOCKED
+                decoration: const InputDecoration(
+                  labelText: "Phone (Verified Only)",
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection("users")
+                    .doc(uid)
+                    .update({"name": nameController.text});
+
+                Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 🔥 OTP DIALOG
+  void _showOtpDialog(BuildContext context, String uid) {
+    TextEditingController phoneController = TextEditingController();
+    TextEditingController otpController = TextEditingController();
+
+    final otpService = OtpService();
+    bool otpSent = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Text("Verify Phone"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!otpSent)
+                    TextField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(
+                        labelText: "Enter Phone",
+                      ),
+                    ),
+                  if (otpSent)
+                    TextField(
+                      controller: otpController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: "Enter OTP"),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    try {
+                      if (!otpSent) {
+                        await otpService.sendOtp(
+                          "+91${phoneController.text.trim()}",
+                        );
+                        setState(() => otpSent = true);
+                      } else {
+                        await otpService.verifyOtp(otpController.text.trim());
+
+                        await FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(uid)
+                            .update({
+                              "phone": "+91${phoneController.text.trim()}",
+                              "isPhoneVerified": true,
+                            });
+
+                        Navigator.pop(context);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Phone Verified Successfully"),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(e.toString())));
+                    }
+                  },
+                  child: Text(otpSent ? "Verify OTP" : "Send OTP"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _tile(
+    IconData icon,
+    String text, {
+    bool isDanger = false,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        leading: Icon(
+          icon,
+          color: isDanger ? Colors.red : const Color(0xff1D4ED8),
         ),
+        title: Text(text),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       ),
     );
   }
 }
 
-/// HISTORY TAB
+/// ================= HISTORY =================
+/// ================= HISTORY =================
+/// 🔥 UPDATED WITH OTP FLOW
 
 class HistoryTab extends StatelessWidget {
   const HistoryTab({super.key});
@@ -193,19 +394,122 @@ class HistoryTab extends StatelessWidget {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(15),
+          padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
           itemCount: jobs.length,
           itemBuilder: (context, index) {
             var job = jobs[index];
+            var data = job.data() as Map<String, dynamic>;
 
-            return Card(
+            String status = data['status'] ?? "pending";
+            bool otpVerified = data['otpVerified'] ?? false;
+
+            return Container(
               margin: const EdgeInsets.only(bottom: 15),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: ListTile(
-                title: Text(job['workerName']),
-                subtitle: Text("Status: ${job['status']}"),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// HEADER
+                  Row(
+                    children: [
+                      const Icon(Icons.work, color: Color(0xff1D4ED8)),
+                      const SizedBox(width: 10),
+                      Text(
+                        data['workerName'] ?? "",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  /// STATUS
+                  Text("Status: $status"),
+
+                  const SizedBox(height: 10),
+
+                  /// 🔐 SHOW OTP (ONLY USER)
+                  if (status == "accepted" && otpVerified == false)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Share this OTP with worker:",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          data['jobOtp'] ?? "Generating...",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  /// ⏳ WAITING STATE
+                  if (status == "accepted" && otpVerified == false)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Text(
+                        "Waiting for worker to verify OTP",
+                        style: TextStyle(color: Colors.orange),
+                      ),
+                    ),
+
+                  /// 💳 READY TO COMPLETE
+                  if (status == "accepted" && otpVerified == true)
+                    Column(
+                      children: [
+                        const SizedBox(height: 10),
+
+                        const Text(
+                          "OTP Verified ✅",
+                          style: TextStyle(color: Colors.green),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await db.completeJob(job.id);
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text("Job Completed"),
+                                  ),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())),
+                                );
+                              }
+                            },
+                            child: const Text("Complete Job"),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  /// ✅ COMPLETED STATE
+                  if (status == "completed")
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Text(
+                        "Job Completed ✅",
+                        style: TextStyle(color: Colors.green),
+                      ),
+                    ),
+                ],
               ),
             );
           },
@@ -215,8 +519,8 @@ class HistoryTab extends StatelessWidget {
   }
 }
 
-/// SEARCH TAB
-
+/// ================= SEARCH =================
+/// (UNCHANGED)
 class SearchTab extends StatelessWidget {
   const SearchTab({super.key});
 
@@ -224,53 +528,174 @@ class SearchTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final db = DatabaseService();
 
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: StreamBuilder<QuerySnapshot>(
-        stream: db.getWorkers(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return StreamBuilder<QuerySnapshot>(
+      stream: db.getWorkers(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          var workers = snapshot.data!.docs;
+        var workers = snapshot.data!.docs.where((doc) {
+          var data = doc.data() as Map<String, dynamic>;
 
-          return ListView.builder(
-            itemCount: workers.length,
-            itemBuilder: (context, index) {
-              var worker = workers[index];
+          return (data['isApproved'] ?? false) &&
+              (data['isAvailable'] ?? false) &&
+              (data['isPhoneVerified'] ?? false);
+        }).toList();
 
-              return Card(
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+          itemCount: workers.length,
+          itemBuilder: (context, index) {
+            var worker = workers[index];
+            var data = worker.data() as Map<String, dynamic>;
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        WorkerDetailScreen(workerId: worker.id, data: data),
+                  ),
+                );
+              },
+              child: Container(
                 margin: const EdgeInsets.only(bottom: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Colors.blue,
-                    child: Icon(Icons.person, color: Colors.white),
-                  ),
-                  title: Text(worker['name']),
-                  subtitle: Text(worker['skill']),
-                  trailing: ElevatedButton(
-                    child: const Text("Hire"),
-                    onPressed: () async {
-                      await db.sendJobRequest(
-                        workerId: worker.id,
-                        workerName: worker['name'],
-                        skill: worker['skill'],
-                      );
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      backgroundColor: Color(0xff1D4ED8),
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
+                    const SizedBox(width: 15),
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Job Request Sent")),
-                      );
-                    },
-                  ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data['name'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            data['skill'] ?? "No Skill",
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Icon(Icons.arrow_forward_ios, size: 16),
+                  ],
                 ),
-              );
-            },
-          );
-        },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// 🔽 ADD THIS AT THE VERY BOTTOM OF YOUR FILE
+
+class WorkerDetailScreen extends StatelessWidget {
+  final String workerId;
+  final Map<String, dynamic> data;
+
+  const WorkerDetailScreen({
+    super.key,
+    required this.workerId,
+    required this.data,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final db = DatabaseService();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Worker Details")),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            /// PROFILE
+            const CircleAvatar(
+              radius: 40,
+              backgroundColor: Color(0xff1D4ED8),
+              child: Icon(Icons.person, size: 40, color: Colors.white),
+            ),
+
+            const SizedBox(height: 15),
+
+            Text(
+              data['name'],
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 5),
+
+            Text(data['skill'] ?? "No Skill"),
+
+            const SizedBox(height: 20),
+
+            /// DETAILS
+            _infoTile("Phone", data['phone'] ?? "Not provided"),
+            _infoTile("Experience", data['experience'] ?? "Not provided"),
+            _infoTile(
+              "Availability",
+              data['isAvailable'] == true ? "Available" : "Offline",
+            ),
+
+            const Spacer(),
+
+            /// HIRE BUTTON
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await db.sendJobRequest(
+                    workerId: workerId,
+                    workerName: data['name'],
+                    skill: data['skill'] ?? "General Service",
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Job Request Sent")),
+                  );
+
+                  Navigator.pop(context);
+                },
+                child: const Text("Hire Worker"),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoTile(String title, String value) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
       ),
     );
   }
