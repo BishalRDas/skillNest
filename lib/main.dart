@@ -92,7 +92,79 @@ class MyApp extends StatelessWidget {
         dividerColor: AppColors.border,
       ),
 
-      home: AuthCheck(),
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  @override
+  void initState() {
+    super.initState();
+    _goNext();
+  }
+
+  Future<void> _goNext() async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => AuthCheck()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.primary, AppColors.secondary],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              /// 🔥 APP NAME
+              Text(
+                "SkillNest",
+                style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              /// SUBTITLE
+              Text(
+                "Find Skilled Workers Easily",
+                style: TextStyle(fontSize: 14, color: Colors.white70),
+              ),
+
+              SizedBox(height: 40),
+
+              /// LOADING
+              CircularProgressIndicator(color: Colors.white),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

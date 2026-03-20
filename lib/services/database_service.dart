@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -168,4 +170,15 @@ class DatabaseService {
   Stream<QuerySnapshot> getAllJobs() {
     return _firestore.collection("jobs").snapshots();
   }
+}
+
+Future<String> uploadProfileImage(File file, String uid) async {
+  final ref = FirebaseStorage.instance
+      .ref()
+      .child('profile_images')
+      .child('$uid.jpg');
+
+  await ref.putFile(file);
+
+  return await ref.getDownloadURL();
 }

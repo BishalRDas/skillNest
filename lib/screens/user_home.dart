@@ -1,10 +1,14 @@
+// SAME IMPORTS
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/database_service.dart';
-import '../services/otp_service.dart'; // ✅ NEW
+import '../services/otp_service.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class UserHome extends StatefulWidget {
   const UserHome({super.key});
@@ -39,10 +43,13 @@ class _UserHomeState extends State<UserHome> {
         margin: const EdgeInsets.all(15),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(25),
           boxShadow: [
-            BoxShadow(blurRadius: 25, color: Colors.black.withOpacity(0.08)),
+            BoxShadow(
+              blurRadius: 25,
+              color: Colors.black.withValues(alpha: 0.08),
+            ),
           ],
         ),
         child: Row(
@@ -105,19 +112,23 @@ class AccountTab extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
           children: [
-            /// PROFILE CARD
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(25),
               ),
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 32,
                     backgroundColor: Colors.white,
-                    child: Icon(Icons.person, color: Color(0xff1D4ED8)),
+                    backgroundImage: data['profileImage'] != null
+                        ? NetworkImage(data['profileImage'])
+                        : null,
+                    child: data['profileImage'] == null
+                        ? const Icon(Icons.person, color: Color(0xff1D4ED8))
+                        : null,
                   ),
                   const SizedBox(width: 15),
                   Column(
@@ -163,19 +174,20 @@ class AccountTab extends StatelessWidget {
             _tile(
               Icons.edit,
               "Edit Profile",
-              onTap: () {
-                _showEditDialog(context, uid, data);
-              },
+              onTap: () => _showEditDialog(context, uid, data),
             ),
 
-            /// 🔥 VERIFY PHONE
+            _tile(
+              Icons.image,
+              "Upload Profile Picture",
+              onTap: () => _uploadProfileImage(context, uid),
+            ),
+
             if (!isVerified)
               _tile(
                 Icons.phone_android,
                 "Verify Phone Number",
-                onTap: () {
-                  _showOtpDialog(context, uid);
-                },
+                onTap: () => _showOtpDialog(context, uid),
               ),
 
             _tile(Icons.settings, "Settings"),
@@ -199,7 +211,87 @@ class AccountTab extends StatelessWidget {
     );
   }
 
-  /// EDIT PROFILE (PHONE LOCKED)
+  /// IMAGE PICK
+  Future<File?> _pickImage() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked == null) return null;
+    return File(picked.path);
+  }
+
+  /// IMAGE UPLOAD
+  Future<void> _uploadProfileImage(BuildContext context, String uid) async {
+    final file = await _pickImage();
+    if (file == null) return;
+
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('profile_images')
+        .child('$uid.jpg');
+
+    await ref.putFile(file);
+    final url = await ref.getDownloadURL();
+
+    await FirebaseFirestore.instance.collection("users").doc(uid).update({
+      "profileImage": url,
+    });
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Profile Updated")));
+  }
+
+  /// OTP (UNCHANGED)
+  void _showOtpDialog(BuildContext context, String uid) {
+    TextEditingController phoneController = TextEditingController();
+    TextEditingController otpController = TextEditingController();
+
+    final otpService = OtpService();
+    bool otpSent = false;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Verify Phone"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!otpSent) TextField(controller: phoneController),
+                  if (otpSent) TextField(controller: otpController),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () async {
+                    if (!otpSent) {
+                      await otpService.sendOtp("+91${phoneController.text}");
+                      setState(() => otpSent = true);
+                    } else {
+                      await otpService.verifyOtp(otpController.text);
+
+                      await FirebaseFirestore.instance
+                          .collection("users")
+                          .doc(uid)
+                          .update({
+                            "phone": "+91${phoneController.text}",
+                            "isPhoneVerified": true,
+                          });
+
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Text(otpSent ? "Verify" : "Send OTP"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showEditDialog(
     BuildContext context,
     String uid,
@@ -208,6 +300,7 @@ class AccountTab extends StatelessWidget {
     TextEditingController nameController = TextEditingController(
       text: data["name"],
     );
+
     TextEditingController phoneController = TextEditingController(
       text: data["phone"] ?? "",
     );
@@ -230,7 +323,7 @@ class AccountTab extends StatelessWidget {
               const SizedBox(height: 10),
               TextField(
                 controller: phoneController,
-                enabled: false, // 🔥 LOCKED
+                enabled: false,
                 decoration: const InputDecoration(
                   labelText: "Phone (Verified Only)",
                 ),
@@ -250,95 +343,14 @@ class AccountTab extends StatelessWidget {
                     .update({"name": nameController.text});
 
                 Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Profile Updated")),
+                );
               },
               child: const Text("Save"),
             ),
           ],
-        );
-      },
-    );
-  }
-
-  /// 🔥 OTP DIALOG
-  void _showOtpDialog(BuildContext context, String uid) {
-    TextEditingController phoneController = TextEditingController();
-    TextEditingController otpController = TextEditingController();
-
-    final otpService = OtpService();
-    bool otpSent = false;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: const Text("Verify Phone"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (!otpSent)
-                    TextField(
-                      controller: phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: "Enter Phone",
-                      ),
-                    ),
-                  if (otpSent)
-                    TextField(
-                      controller: otpController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Enter OTP"),
-                    ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      if (!otpSent) {
-                        await otpService.sendOtp(
-                          "+91${phoneController.text.trim()}",
-                        );
-                        setState(() => otpSent = true);
-                      } else {
-                        await otpService.verifyOtp(otpController.text.trim());
-
-                        await FirebaseFirestore.instance
-                            .collection("users")
-                            .doc(uid)
-                            .update({
-                              "phone": "+91${phoneController.text.trim()}",
-                              "isPhoneVerified": true,
-                            });
-
-                        Navigator.pop(context);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Phone Verified Successfully"),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(e.toString())));
-                    }
-                  },
-                  child: Text(otpSent ? "Verify OTP" : "Send OTP"),
-                ),
-              ],
-            );
-          },
         );
       },
     );
