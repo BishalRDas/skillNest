@@ -25,7 +25,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   AuthService auth = AuthService();
 
   Future<void> register() async {
-    await auth.register(name.text, email.text, password.text, role);
+    await auth.register(
+      name.text,
+      email.text,
+      password.text,
+      role,
+      phone: phone.text,
+      address: address.text,
+      skill: skill.text,
+      experience: experience.text,
+    );
 
     if (!mounted) return;
     Navigator.pop(context);
