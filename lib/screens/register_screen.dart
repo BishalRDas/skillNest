@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -13,7 +14,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
 
-  /// NEW FIELDS
   TextEditingController phone = TextEditingController();
   TextEditingController address = TextEditingController();
   TextEditingController skill = TextEditingController();
@@ -25,7 +25,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   AuthService auth = AuthService();
 
   Future<void> register() async {
-    await auth.register(name.text, email.text, password.text, role);
+    await auth.register(
+      name.text,
+      email.text,
+      password.text,
+      role,
+      phone: phone.text,
+      address: address.text,
+      skill: skill.text,
+      experience: experience.text,
+    );
 
     if (!mounted) return;
     Navigator.pop(context);
@@ -36,54 +45,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          /// BACKGROUND
+          /// 🌌 BACKGROUND (same style as your login UI)
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xff1D4ED8), Color(0xff2563EB)],
+                colors: [Color(0xff0F172A), Color(0xff1E3A8A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
           ),
 
-          /// CONTENT
+          /// 🔵 LIGHT BLOBS
+          Positioned(top: -80, right: -60, child: _circle(180)),
+          Positioned(bottom: -100, left: -80, child: _circle(220)),
+
+          /// 🧊 GLASS CARD
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(25),
-              child: Column(
-                children: [
-                  const Text(
-                    "Create Account",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  Container(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
                     padding: const EdgeInsets.all(25),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(25),
+                      border: Border.all(color: Colors.white.withOpacity(0.2)),
                     ),
                     child: Column(
                       children: [
+                        const Text(
+                          "Create Account",
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        /// SAME FIELDS (UNCHANGED)
                         _inputField(name, Icons.person, "Full Name"),
                         const SizedBox(height: 12),
+
                         _inputField(email, Icons.email, "Email"),
                         const SizedBox(height: 12),
+
                         _inputField(
                           password,
                           Icons.lock,
                           "Password",
                           isPassword: true,
                         ),
-
                         const SizedBox(height: 12),
 
-                        /// COMMON FIELD
                         _inputField(phone, Icons.phone, "Phone Number"),
 
                         const SizedBox(height: 20),
@@ -106,7 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 20),
 
-                        /// 🔥 DYNAMIC FIELDS
+                        /// DYNAMIC FIELDS
                         if (role == "User") ...[
                           _inputField(address, Icons.location_on, "Address"),
                         ],
@@ -130,39 +149,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         /// BUTTON
                         SizedBox(
                           width: double.infinity,
-                          height: 55,
+                          height: 50,
                           child: ElevatedButton(
                             onPressed: register,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xff1D4ED8),
+                              foregroundColor: const Color(0xff1E3A8A),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
+                                borderRadius: BorderRadius.circular(30),
                               ),
                             ),
                             child: const Text(
                               "Register",
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 12),
 
                         TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: const Text(
                             "Already have account? Login",
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: Colors.white70),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -171,7 +190,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  /// INPUT FIELD
+  /// 🔵 BACKGROUND CIRCLE
+  Widget _circle(double size) {
+    return Container(
+      height: size,
+      width: size,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+
+  /// ❌ NOT CHANGED (as you requested)
   Widget _inputField(
     TextEditingController controller,
     IconData icon,
@@ -196,7 +227,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  /// ROLE CARD
   Widget _roleCard(String text, IconData icon) {
     bool selected = role == text;
 

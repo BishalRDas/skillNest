@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'register_screen.dart';
@@ -50,129 +51,82 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          /// 🔥 BACKGROUND GRADIENT
+          /// 🌌 BACKGROUND GRADIENT
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xff1D4ED8), Color(0xff2563EB)],
+                colors: [Color(0xff0F172A), Color(0xff1E3A8A)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
           ),
 
-          /// 🔥 SOFT LIGHT EFFECT
-          Positioned(
-            top: -80,
-            right: -80,
-            child: Container(
-              height: 200,
-              width: 200,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
+          /// 🔵 LIGHT EFFECTS
+          Positioned(top: -80, right: -60, child: _circle(180)),
+          Positioned(bottom: -100, left: -80, child: _circle(220)),
 
-          Positioned(
-            bottom: -100,
-            left: -100,
-            child: Container(
-              height: 250,
-              width: 250,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-
-          /// MAIN CONTENT
+          /// 🧊 GLASS LOGIN CARD
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(25),
-              child: Column(
-                children: [
-                  /// 🔥 APP LOGO + TITLE
-                  const Icon(
-                    Icons.home_repair_service,
-                    size: 70,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "SkillNest",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text(
-                    "Find skilled workers instantly",
-                    style: TextStyle(color: Colors.white70),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  /// 🧊 GLASS CARD
-                  Container(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
                     padding: const EdgeInsets.all(25),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(25),
                       border: Border.all(color: Colors.white.withOpacity(0.2)),
                     ),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        /// EMAIL
-                        TextField(
-                          controller: email,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.email,
-                              color: Colors.white,
-                            ),
-                            hintText: "Email",
-                            hintStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: Colors.white.withOpacity(0.1),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide.none,
-                            ),
+                        /// 🔥 TITLE
+                        const Icon(
+                          Icons.home_repair_service,
+                          size: 60,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          "SkillNest",
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
-
-                        const SizedBox(height: 15),
-
-                        /// PASSWORD
-                        TextField(
-                          controller: password,
-                          obscureText: true,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(
-                              Icons.lock,
-                              color: Colors.white,
-                            ),
-                            hintText: "Password",
-                            hintStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: Colors.white.withOpacity(0.1),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
+                        const SizedBox(height: 5),
+                        const Text(
+                          "Welcome back 👋",
+                          style: TextStyle(color: Colors.white70),
                         ),
 
                         const SizedBox(height: 30),
 
-                        /// 🔥 LOGIN BUTTON
+                        /// 📧 EMAIL
+                        _inputField(
+                          controller: email,
+                          hint: "Email",
+                          icon: Icons.email,
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        /// 🔒 PASSWORD
+                        _inputField(
+                          controller: password,
+                          hint: "Password",
+                          icon: Icons.lock,
+                          isPassword: true,
+                        ),
+
+                        const SizedBox(height: 30),
+
+                        /// 🚀 LOGIN BUTTON
                         SizedBox(
                           width: double.infinity,
                           height: 55,
@@ -180,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: login,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xff1D4ED8),
+                              foregroundColor: const Color(0xff1E3A8A),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
@@ -197,9 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         const SizedBox(height: 15),
 
-                        /// REGISTER
-                        TextButton(
-                          onPressed: () {
+                        /// 🧾 REGISTER
+                        GestureDetector(
+                          onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -208,18 +162,59 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: const Text(
-                            "Create New Account",
-                            style: TextStyle(color: Colors.white),
+                            "Don't have an account? Register",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 🔵 BACKGROUND CIRCLE
+  Widget _circle(double size) {
+    return Container(
+      height: size,
+      width: size,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+
+  /// ✨ INPUT FIELD
+  Widget _inputField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.white),
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white70),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
       ),
     );
   }

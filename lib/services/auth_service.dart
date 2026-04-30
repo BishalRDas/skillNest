@@ -12,8 +12,12 @@ class AuthService {
     String name,
     String email,
     String password,
-    String role,
-  ) async {
+    String role, {
+    String? phone,
+    String? address,
+    String? skill,
+    String? experience,
+  }) async {
     try {
       UserCredential user = await auth.createUserWithEmailAndPassword(
         email: email.trim(),
@@ -26,7 +30,9 @@ class AuthService {
       await firestore.collection("users").doc(uid).set({
         "name": name,
         "email": email.trim(),
+        "phone": phone ?? "",
         "role": role,
+        "isPhoneVerified": false,
         "createdAt": FieldValue.serverTimestamp(),
       });
 
@@ -35,9 +41,15 @@ class AuthService {
         await firestore.collection("workers").doc(uid).set({
           "name": name,
           "email": email.trim(),
-          "phone": "",
-          "skill": "",
-          "experience": "",
+          "phone": phone ?? "",
+          "skill": (skill != null && skill.trim().isNotEmpty)
+              ? skill.trim()
+              : "Not Provided",
+
+          "experience": (experience != null && experience.trim().isNotEmpty)
+              ? experience.trim()
+              : "0",
+          "isPhoneVerified": false,
           "isAvailable": true,
           "isApproved": false,
           "createdAt": FieldValue.serverTimestamp(),
