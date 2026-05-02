@@ -114,12 +114,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             const SizedBox(width: 8),
                             Expanded(child: _roleCard("Worker", Icons.build)),
                             const SizedBox(width: 8),
-                            Expanded(
-                              child: _roleCard(
-                                "Admin",
-                                Icons.admin_panel_settings,
-                              ),
-                            ),
+                            //Expanded(
+                            //child: _roleCard(
+                            //"Admin",
+                            //Icons.admin_panel_settings,
+                            //),
+                            //),
                           ],
                         ),
 
