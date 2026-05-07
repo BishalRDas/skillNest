@@ -673,6 +673,7 @@ class HistoryTab extends StatelessWidget {
 
     return StreamBuilder<QuerySnapshot>(
       stream: db.getUserHistory(),
+
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -691,6 +692,7 @@ class HistoryTab extends StatelessWidget {
           var data = job.data() as Map<String, dynamic>;
 
           var timestamp = data['createdAt'];
+
           DateTime date = timestamp != null
               ? (timestamp as Timestamp).toDate()
               : DateTime.now();
@@ -708,13 +710,16 @@ class HistoryTab extends StatelessWidget {
         /// ================= UI =================
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+
           children: groupedJobs.entries.map((entry) {
             String month = entry.key;
+
             List<QueryDocumentSnapshot> monthJobs = entry.value;
 
             return ExpansionTile(
               title: Text(
                 month,
+
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -723,31 +728,44 @@ class HistoryTab extends StatelessWidget {
 
               children: monthJobs.map((job) {
                 var data = job.data() as Map<String, dynamic>;
+
                 data['id'] = job.id;
 
                 String status = data['status'] ?? "pending";
+
                 bool otpVerified = data['otpVerified'] ?? false;
+                bool isPaid = data['paymentStatus'] == "paid";
+                bool isReviewed = data['isReviewed'] ?? false;
 
                 /// ================= DATE + TIME =================
                 var timestamp = data['createdAt'];
+
                 DateTime date = timestamp != null
                     ? (timestamp as Timestamp).toDate()
                     : DateTime.now();
 
                 String formattedDate =
-                    "${date.day}/${date.month}/${date.year} - ${date.hour}:${date.minute.toString().padLeft(2, '0')}";
+                    "${date.day}/${date.month}/${date.year} - "
+                    "${date.hour}:${date.minute.toString().padLeft(2, '0')}";
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 20),
+
                   padding: const EdgeInsets.all(22),
+
                   decoration: BoxDecoration(
                     color: Colors.white,
+
                     borderRadius: BorderRadius.circular(24),
+
                     border: Border.all(color: Colors.grey.shade200, width: 1),
+
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.04),
+
                         blurRadius: 20,
+
                         offset: const Offset(0, 8),
                       ),
                     ],
@@ -755,10 +773,12 @@ class HistoryTab extends StatelessWidget {
 
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+
                     children: [
-                      /// 📅 DATE + TIME
+                      /// 📅 CREATED DATE
                       Text(
                         formattedDate,
+
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -772,31 +792,119 @@ class HistoryTab extends StatelessWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
+
                             decoration: BoxDecoration(
                               color: const Color(0xffEFF6FF),
+
                               borderRadius: BorderRadius.circular(10),
                             ),
+
                             child: const Icon(
                               Icons.work_outline,
+
                               color: Color(0xff1D4ED8),
+
                               size: 18,
                             ),
                           ),
+
                           const SizedBox(width: 10),
 
-                          /// 🔥 FIX HERE
                           Expanded(
                             child: Text(
                               data['workerName'] ?? "Worker",
+
                               overflow: TextOverflow.ellipsis,
+
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+
                                 fontSize: 16,
+
                                 color: Color(0xFF111827),
                               ),
                             ),
                           ),
                         ],
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      /// ================= BOOKING DATE + SLOT =================
+                      Container(
+                        padding: const EdgeInsets.all(14),
+
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+
+                          borderRadius: BorderRadius.circular(14),
+
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            /// BOOKING DATE
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_today,
+
+                                  size: 18,
+
+                                  color: Color(0xFF1D4ED8),
+                                ),
+
+                                const SizedBox(width: 10),
+
+                                Expanded(
+                                  child: Text(
+                                    "Booking Date: "
+                                    "${data.containsKey('bookingDate') ? data['bookingDate'] : 'Not Selected'}",
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            /// SLOT
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.access_time,
+
+                                  size: 18,
+
+                                  color: Colors.green,
+                                ),
+
+                                const SizedBox(width: 10),
+
+                                Expanded(
+                                  child: Text(
+                                    "Preferred Slot: "
+                                    "${data.containsKey('bookingSlot') ? data['bookingSlot'] : 'Not Selected'}",
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: 15),
@@ -807,20 +915,29 @@ class HistoryTab extends StatelessWidget {
                           Expanded(
                             child: Text(
                               "Status: ${status.toUpperCase()}",
+
                               overflow: TextOverflow.ellipsis,
+
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
+
                                 color: Colors.blueGrey,
+
                                 fontSize: 13,
                               ),
                             ),
                           ),
+
                           const SizedBox(width: 10),
+
                           Text(
                             "₹${data['totalPrice'] ?? 0}",
+
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
+
                               fontSize: 18,
+
                               color: Color(0xFF1D4ED8),
                             ),
                           ),
@@ -830,27 +947,37 @@ class HistoryTab extends StatelessWidget {
                       const SizedBox(height: 15),
 
                       /// 🔐 OTP
-                      if (status == "accepted" && otpVerified == false)
+                      /// 🔐 OTP BEFORE VERIFICATION
+                      if (otpVerified == false)
                         Container(
                           width: double.infinity,
+
                           padding: const EdgeInsets.all(15),
+
                           decoration: BoxDecoration(
                             color: Colors.orange.shade50,
+
                             borderRadius: BorderRadius.circular(15),
+
                             border: Border.all(color: Colors.orange.shade200),
                           ),
+
                           child: Column(
                             children: [
                               const Text(
                                 "Share this OTP to start work",
+
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.orange,
                                 ),
                               ),
+
                               const SizedBox(height: 5),
+
                               Text(
                                 data['jobOtp'] ?? "---",
+
                                 style: TextStyle(
                                   fontSize: 24,
                                   letterSpacing: 4,
@@ -858,87 +985,78 @@ class HistoryTab extends StatelessWidget {
                                   color: Colors.orange.shade800,
                                 ),
                               ),
-                              const SizedBox(height: 5),
-                              const Text(
-                                "Waiting for worker to verify...",
-                                style: TextStyle(
-                                  color: Colors.orange,
-                                  fontSize: 12,
-                                ),
-                              ),
                             ],
                           ),
                         ),
 
-                      /// 💳 READY
-                      if (status == "accepted" && otpVerified == true)
+                      /// ✅ SHOW COMPLETE BUTTON AFTER OTP VERIFIED
+                      if (otpVerified == true && status != "completed")
                         Container(
                           width: double.infinity,
+
                           padding: const EdgeInsets.all(15),
+
                           decoration: BoxDecoration(
-                            color: const Color(0xffEFF6FF),
+                            color: Colors.green.shade50,
+
                             borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: Colors.blue.shade100),
+
+                            border: Border.all(color: Colors.green.shade200),
                           ),
+
                           child: Column(
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.verified,
-                                    color: Colors.green.shade600,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      "OTP Verified. Job in progress.",
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.green.shade700,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              const Text(
+                                "Work Started ✅",
+
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                  fontSize: 16,
+                                ),
                               ),
-                              const SizedBox(height: 15),
+
+                              const SizedBox(height: 12),
+
                               SizedBox(
                                 width: double.infinity,
+
                                 child: ElevatedButton(
                                   onPressed: () async {
-                                    try {
-                                      await db.completeJob(job.id);
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "Job Completed",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(e.toString()),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
+                                    await FirebaseFirestore.instance
+                                        .collection("jobs")
+                                        .doc(job.id)
+                                        .update({
+                                          "status": "completed",
+                                          "updatedAt":
+                                              FieldValue.serverTimestamp(),
+                                        });
+
+                                    await FirebaseFirestore.instance
+                                        .collection("workers")
+                                        .doc(data['workerId'])
+                                        .update({"isWorking": false});
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Job Completed ✅"),
+                                      ),
+                                    );
                                   },
+
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1D4ED8),
+                                    backgroundColor: Colors.green,
                                     foregroundColor: Colors.white,
+
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
+
                                   child: const Text("Complete Job"),
                                 ),
                               ),
@@ -946,102 +1064,354 @@ class HistoryTab extends StatelessWidget {
                           ),
                         ),
 
-                      /// ✅ COMPLETED
+                      /// ✅ AFTER COMPLETION
+                      /// ✅ AFTER COMPLETION
                       if (status == "completed")
                         Container(
                           width: double.infinity,
+
                           padding: const EdgeInsets.all(15),
+
                           decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                            color: Colors.blue.shade50,
+
                             borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: Colors.green.shade200),
+
+                            border: Border.all(color: Colors.blue.shade200),
                           ),
+
                           child: Column(
                             children: [
-                              /// ✅ STATUS ROW (FIXED - NO OVERFLOW)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green.shade600,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
+                              const Text(
+                                "Job Completed ✅",
 
-                                  /// 🔥 IMPORTANT FIX
-                                  Expanded(
-                                    child: Text(
-                                      "Job Completed Successfully",
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.green.shade700,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                  fontSize: 16,
+                                ),
                               ),
 
-                              /// ⭐ REVIEW BUTTON
-                              if (db.canReview({...data, "id": job.id})) ...[
-                                const SizedBox(height: 15),
+                              const SizedBox(height: 12),
 
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {
-                                      try {
-                                        showReviewDialog(context, job.id, data);
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              "Error: ${e.toString()}",
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.amber.shade500,
-                                      foregroundColor: Colors.white,
-                                      minimumSize: const Size(
-                                        double.infinity,
-                                        48,
-                                      ), // ✅ FIX
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      elevation: 2,
+                              /// PAYMENT STATUS
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+
+                                decoration: BoxDecoration(
+                                  color: isPaid
+                                      ? Colors.green.shade50
+                                      : Colors.orange.shade50,
+
+                                  borderRadius: BorderRadius.circular(12),
+
+                                  border: Border.all(
+                                    color: isPaid
+                                        ? Colors.green.shade200
+                                        : Colors.orange.shade200,
+                                  ),
+                                ),
+
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+
+                                  children: [
+                                    Icon(
+                                      isPaid
+                                          ? Icons.check_circle
+                                          : Icons.pending,
+
+                                      color: isPaid
+                                          ? Colors.green
+                                          : Colors.orange,
                                     ),
-                                    icon: const Icon(Icons.star, size: 18),
-                                    label: const Text(
-                                      "Rate Worker",
-                                      overflow: TextOverflow.ellipsis, // ✅ FIX
+
+                                    const SizedBox(width: 10),
+
+                                    Text(
+                                      isPaid
+                                          ? "Payment Verified"
+                                          : "Payment Pending",
+
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
+
+                                        color: isPaid
+                                            ? Colors.green
+                                            : Colors.orange,
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ],
+                              ),
 
-                              /// ✅ ALREADY REVIEWED
-                              if (data['isReviewed'] == true) ...[
-                                const SizedBox(height: 10),
-                                const Text(
-                                  "You have reviewed this worker.",
-                                  style: TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 13,
+                              /// ⭐ PREMIUM REVIEW CARD
+                              /// ⭐ SHOW RATE BUTTON ONLY AFTER PAYMENT VERIFIED
+                              /// ⭐ REVIEW SECTION
+                              /// ⭐ REVIEW SECTION
+                              if (status == "completed" &&
+                                  isPaid &&
+                                  !isReviewed)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 14),
+
+                                  width: double.infinity,
+
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
                                   ),
-                                  textAlign: TextAlign.center,
+
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.amber.shade50,
+                                        Colors.orange.shade50,
+                                      ],
+
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+
+                                    borderRadius: BorderRadius.circular(18),
+
+                                    border: Border.all(
+                                      color: Colors.amber.shade200,
+                                    ),
+
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.orange.withOpacity(0.06),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
+
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+
+                                    children: [
+                                      /// ⭐ SMALL ICON
+                                      Container(
+                                        padding: const EdgeInsets.all(10),
+
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.amber.withOpacity(
+                                                0.12,
+                                              ),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+
+                                        child: const Icon(
+                                          Icons.workspace_premium_rounded,
+                                          color: Colors.amber,
+                                          size: 24,
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 12),
+
+                                      /// TEXTS
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+
+                                          mainAxisSize: MainAxisSize.min,
+
+                                          children: [
+                                            const Text(
+                                              "Rate Experience",
+
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF111827),
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 3),
+
+                                            Text(
+                                              "Share your service feedback.",
+
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                color: Colors.grey.shade700,
+                                                height: 1.4,
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 6),
+
+                                            /// STARS
+                                            Wrap(
+                                              spacing: 1,
+
+                                              children: List.generate(
+                                                5,
+                                                (index) => Icon(
+                                                  Icons.star_rounded,
+                                                  color: Colors.amber.shade500,
+                                                  size: 15,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 10),
+
+                                      /// BUTTON
+                                      SizedBox(
+                                        height: 42,
+
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            showReviewDialog(
+                                              context,
+                                              job.id,
+                                              data,
+                                            );
+                                          },
+
+                                          style: ElevatedButton.styleFrom(
+                                            elevation: 0,
+
+                                            backgroundColor: const Color(
+                                              0xFF111827,
+                                            ),
+
+                                            foregroundColor: Colors.white,
+
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 14,
+                                              vertical: 10,
+                                            ),
+
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                          ),
+
+                                          child: const Text(
+                                            "Rate",
+
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
+
+                              /// ✅ REVIEW SUBMITTED
+                              if (status == "completed" && isPaid && isReviewed)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 14),
+
+                                  width: double.infinity,
+
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade50,
+
+                                    borderRadius: BorderRadius.circular(18),
+
+                                    border: Border.all(
+                                      color: Colors.green.shade200,
+                                    ),
+                                  ),
+
+                                  child: Row(
+                                    children: [
+                                      /// SMALL SUCCESS ICON
+                                      Container(
+                                        padding: const EdgeInsets.all(9),
+
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                        ),
+
+                                        child: const Icon(
+                                          Icons.check_circle,
+                                          color: Colors.green,
+                                          size: 22,
+                                        ),
+                                      ),
+
+                                      const SizedBox(width: 12),
+
+                                      /// TEXTS
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+
+                                          mainAxisSize: MainAxisSize.min,
+
+                                          children: [
+                                            const Text(
+                                              "Review Submitted",
+
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: Colors.green,
+                                              ),
+                                            ),
+
+                                            const SizedBox(height: 3),
+
+                                            Text(
+                                              "Thank you for your feedback.",
+
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -1059,12 +1429,27 @@ class HistoryTab extends StatelessWidget {
 
 /// ================= SEARCH =================
 /// (UNCHANGED)
-class SearchTab extends StatelessWidget {
+
+/// ================= SEARCH =================
+
+class SearchTab extends StatefulWidget {
   const SearchTab({super.key});
+
+  @override
+  State<SearchTab> createState() => _SearchTabState();
+}
+
+class _SearchTabState extends State<SearchTab> {
+  /// ✅ PER WORKER SLOT
+  Map<String, String?> selectedSlots = {};
+
+  /// ✅ PER WORKER DATE
+  Map<String, DateTime?> selectedDates = {};
 
   @override
   Widget build(BuildContext context) {
     final db = DatabaseService();
+
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     Future<String> getUserLocation() async {
@@ -1078,6 +1463,7 @@ class SearchTab extends StatelessWidget {
 
     return FutureBuilder<String>(
       future: getUserLocation(),
+
       builder: (context, locationSnap) {
         if (!locationSnap.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -1090,11 +1476,12 @@ class SearchTab extends StatelessWidget {
           return const Center(child: Text("Please set your location first"));
         }
 
-        /// 🔍 DEBUG (remove later)
+        /// 🔍 DEBUG
         print("User Location: $userLocation");
 
         return StreamBuilder<QuerySnapshot>(
           stream: db.getWorkers(userLocation),
+
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
@@ -1111,54 +1498,76 @@ class SearchTab extends StatelessWidget {
 
             return ListView.builder(
               padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+
               itemCount: workers.length,
+
               itemBuilder: (context, index) {
                 var worker = workers[index];
+
                 var data = worker.data() as Map<String, dynamic>;
 
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
+
                       MaterialPageRoute(
                         builder: (_) =>
                             WorkerDetailScreen(workerId: worker.id, data: data),
                       ),
                     );
                   },
+
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 20),
+
                     padding: const EdgeInsets.all(22),
+
                     decoration: BoxDecoration(
                       color: Colors.white,
+
                       borderRadius: BorderRadius.circular(24),
+
                       border: Border.all(color: Colors.grey.shade200, width: 1),
+
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.04),
+
                           blurRadius: 20,
+
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
+
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
                       children: [
+                        /// PROFILE IMAGE
                         Container(
                           padding: const EdgeInsets.all(2),
+
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
+
                             gradient: LinearGradient(
                               colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
                             ),
                           ),
+
                           child: CircleAvatar(
                             radius: 30,
+
                             backgroundColor: Colors.white,
+
                             backgroundImage: data['profileImage'] != null
                                 ? MemoryImage(
                                     base64Decode(data['profileImage']),
                                   )
                                 : null,
+
                             child: data['profileImage'] == null
                                 ? const Icon(
                                     Icons.person,
@@ -1168,40 +1577,58 @@ class SearchTab extends StatelessWidget {
                                 : null,
                           ),
                         ),
+
                         const SizedBox(width: 15),
 
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+
                             children: [
+                              /// NAME
                               Text(
                                 data['name'] ?? "No Name",
+
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
+
                                   fontSize: 16,
+
                                   color: Color(0xFF111827),
                                 ),
                               ),
+
                               const SizedBox(height: 4),
+
+                              /// SKILL
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
                                   vertical: 4,
                                 ),
+
                                 decoration: BoxDecoration(
                                   color: const Color(0xffEFF6FF),
+
                                   borderRadius: BorderRadius.circular(6),
                                 ),
+
                                 child: Text(
                                   data['skill'] ?? "Skill",
+
                                   style: const TextStyle(
                                     color: Color(0xFF1D4ED8),
+
                                     fontSize: 11,
+
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
+
                               const SizedBox(height: 6),
+
+                              /// RATING
                               Row(
                                 children: [
                                   const Icon(
@@ -1209,28 +1636,141 @@ class SearchTab extends StatelessWidget {
                                     color: Colors.amber,
                                     size: 14,
                                   ),
+
                                   const SizedBox(width: 4),
+
                                   Text(
                                     "${((data['averageRating'] ?? 0).toDouble()).toStringAsFixed(1)}",
+
                                     style: const TextStyle(
                                       color: Colors.black54,
+
                                       fontWeight: FontWeight.bold,
+
                                       fontSize: 12,
                                     ),
                                   ),
                                 ],
                               ),
+
+                              const SizedBox(height: 12),
+
+                              /// ================= SLOT DROPDOWN =================
+                              StreamBuilder<QuerySnapshot>(
+                                stream: db.getAllSlots(),
+
+                                builder: (context, slotSnapshot) {
+                                  if (!slotSnapshot.hasData) {
+                                    return const SizedBox();
+                                  }
+
+                                  var slots = slotSnapshot.data!.docs;
+
+                                  return DropdownButtonFormField<String>(
+                                    value: selectedSlots[worker.id],
+
+                                    decoration: InputDecoration(
+                                      labelText: "Preferred Slot",
+
+                                      filled: true,
+
+                                      fillColor: Colors.grey.shade50,
+
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
+
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+
+                                    items: slots.map((doc) {
+                                      String slot = doc['slot'];
+
+                                      return DropdownMenuItem<String>(
+                                        value: slot,
+
+                                        child: Text(slot),
+                                      );
+                                    }).toList(),
+
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedSlots[worker.id] = value;
+                                      });
+                                    },
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              /// ================= DATE PICKER =================
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  final pickedDate = await showDatePicker(
+                                    context: context,
+
+                                    initialDate: DateTime.now(),
+
+                                    firstDate: DateTime.now(),
+
+                                    lastDate: DateTime(2030),
+                                  );
+
+                                  if (pickedDate != null) {
+                                    setState(() {
+                                      selectedDates[worker.id] = pickedDate;
+                                    });
+                                  }
+                                },
+
+                                icon: const Icon(Icons.calendar_today),
+
+                                label: Text(
+                                  selectedDates[worker.id] == null
+                                      ? "Select Booking Date"
+                                      : selectedDates[worker.id]
+                                            .toString()
+                                            .split(" ")[0],
+                                ),
+
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1D4ED8),
+
+                                  foregroundColor: Colors.white,
+
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 14,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
 
+                        const SizedBox(width: 10),
+
+                        /// ARROW
                         Container(
                           padding: const EdgeInsets.all(8),
+
                           decoration: BoxDecoration(
                             color: Colors.grey.shade50,
+
                             shape: BoxShape.circle,
+
                             border: Border.all(color: Colors.grey.shade200),
                           ),
+
                           child: const Icon(
                             Icons.arrow_forward_ios,
                             size: 14,
@@ -1405,9 +1945,15 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                       workerId: workerId,
                       workerName: data['name'] ?? "Unknown",
                       skill: data['skill'] ?? "General Service",
+
                       hours: hours,
                       charge: charge,
                       totalPrice: total,
+
+                      // ✅ NEW
+                      bookingDate: DateTime.now().toString().split(" ")[0],
+
+                      bookingSlot: "09:00-11:00",
                     );
 
                     ScaffoldMessenger.of(context).showSnackBar(

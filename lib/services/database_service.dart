@@ -93,6 +93,7 @@ class DatabaseService {
         .where('isAvailable', isEqualTo: true)
         .where('isPhoneVerified', isEqualTo: true)
         .where('location', isEqualTo: userLocation) // ✅ ADD THIS LINE
+        .where("isWorking", isEqualTo: false)
         .snapshots();
   }
 
@@ -106,14 +107,20 @@ class DatabaseService {
     required int hours,
     required double charge,
     required double totalPrice,
+
+    // ✅ NEW
+    required String bookingDate,
+    required String bookingSlot,
   }) async {
     final user = _auth.currentUser!;
 
     await _firestore.collection("jobs").add({
       "userId": user.uid.trim(),
       "workerId": workerId.trim(),
+
       "userEmail": user.email,
       "workerName": workerName,
+
       "skill": skill,
       "status": "pending",
 
@@ -121,12 +128,19 @@ class DatabaseService {
       "hours": hours,
       "charge": charge,
       "totalPrice": totalPrice,
+
       "paymentStatus": "pending",
+
+      // ✅ BOOKING DATA
+      "bookingDate": bookingDate,
+      "bookingSlot": bookingSlot,
 
       "jobOtp": null,
       "otpVerified": false,
+
       "createdAt": FieldValue.serverTimestamp(),
-      "isReviewed": false, // ✅ ADD THIS
+
+      "isReviewed": false,
     });
   }
 
@@ -168,6 +182,16 @@ class DatabaseService {
   }
 
   // ===============================
+  // GET ALL TIME SLOTS
+  // ===============================
+  Stream<QuerySnapshot> getAllSlots() {
+    return _firestore
+        .collection("slots")
+        .where("isActive", isEqualTo: true)
+        .snapshots();
+  }
+
+  // ===============================
   // 🔐 GENERATE OTP
   // ===============================
   String _generateOtp() {
@@ -181,9 +205,16 @@ class DatabaseService {
   Future acceptJob(String jobId) async {
     final otp = _generateOtp();
 
+    /// GET JOB
     final jobDoc = await _firestore.collection("jobs").doc(jobId).get();
-    final userId = jobDoc['userId'];
 
+    final data = jobDoc.data()!;
+
+    final userId = data['userId'];
+
+    final workerId = data['workerId'];
+
+    /// REJECT OTHER PENDING JOBS
     var oldJobs = await _firestore
         .collection("jobs")
         .where("userId", isEqualTo: userId)
@@ -196,11 +227,20 @@ class DatabaseService {
       }
     }
 
+    /// ACCEPT CURRENT JOB
     await _firestore.collection("jobs").doc(jobId).update({
       "status": "accepted",
+
       "jobOtp": otp,
+
       "otpVerified": false,
+
       "updatedAt": FieldValue.serverTimestamp(),
+    });
+
+    /// ✅ UPDATE WORKER TABLE
+    await _firestore.collection("workers").doc(workerId).update({
+      "isWorking": true,
     });
   }
 
@@ -235,24 +275,41 @@ class DatabaseService {
   // COMPLETE JOB (USER SIDE)
   // ===============================
   Future completeJob(String jobId) async {
-    final doc = await _firestore.collection("jobs").doc(jobId).get();
+    try {
+      print("COMPLETE JOB STARTED");
 
-    final data = doc.data();
+      final doc = await _firestore.collection("jobs").doc(jobId).get();
 
-    if (data == null) return;
+      final data = doc.data();
 
-    if (data['otpVerified'] != true) {
-      throw Exception("OTP not verified");
+      print("JOB DATA: $data");
+
+      if (data == null) return;
+
+      if (data['otpVerified'] != true) {
+        throw Exception("OTP not verified");
+      }
+
+      final workerId = data['workerId'];
+
+      print("WORKER ID = $workerId");
+
+      await _firestore.collection("jobs").doc(jobId).update({
+        "status": "completed",
+        "paymentStatus": "paid",
+        "updatedAt": FieldValue.serverTimestamp(),
+      });
+
+      print("JOB UPDATED");
+
+      await _firestore.collection("workers").doc(workerId).update({
+        "isWorking": false,
+      });
+
+      print("WORKER UPDATED SUCCESSFULLY");
+    } catch (e) {
+      print("ERROR OCCURRED: $e");
     }
-
-    await _firestore.collection("jobs").doc(jobId).update({
-      "status": "completed",
-
-      // 🔥 ADD THIS LINE
-      "paymentStatus": "paid",
-
-      "updatedAt": FieldValue.serverTimestamp(),
-    });
   }
 
   // ===============================

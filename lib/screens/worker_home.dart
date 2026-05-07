@@ -907,6 +907,15 @@ class RequestTab extends StatelessWidget {
 
         var jobs = snapshot.data!.docs;
 
+        if (jobs.isEmpty) {
+          return const Center(
+            child: Text(
+              "No requests available",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+          );
+        }
+
         return ListView.builder(
           padding: const EdgeInsets.all(20),
           itemCount: jobs.length,
@@ -916,10 +925,14 @@ class RequestTab extends StatelessWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 20),
               padding: const EdgeInsets.all(22),
+
               decoration: BoxDecoration(
                 color: Colors.white,
+
                 borderRadius: BorderRadius.circular(24),
+
                 border: Border.all(color: Colors.grey.shade200, width: 1),
+
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.04),
@@ -928,23 +941,31 @@ class RequestTab extends StatelessWidget {
                   ),
                 ],
               ),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  /// TOP ROW
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                     children: [
+                      /// SKILL TAG
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 6,
                         ),
+
                         decoration: BoxDecoration(
                           color: const Color(0xffEFF6FF),
+
                           borderRadius: BorderRadius.circular(10),
                         ),
+
                         child: Text(
-                          job['skill'],
+                          job['skill'] ?? "Skill",
+
                           style: const TextStyle(
                             color: Color(0xFF1D4ED8),
                             fontWeight: FontWeight.w600,
@@ -952,50 +973,147 @@ class RequestTab extends StatelessWidget {
                           ),
                         ),
                       ),
+
                       const Icon(Icons.schedule, color: Colors.grey, size: 18),
                     ],
                   ),
-                  const SizedBox(height: 12),
+
+                  const SizedBox(height: 14),
+
+                  /// USER EMAIL
                   Text(
                     "Requested by:\n${job['userEmail']}",
+
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 20),
+
+                  const SizedBox(height: 16),
+
+                  /// BOOKING DATE
+                  Container(
+                    padding: const EdgeInsets.all(14),
+
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+
+                      borderRadius: BorderRadius.circular(14),
+
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        /// DATE
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 18,
+                              color: Color(0xFF1D4ED8),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: Text(
+                                "Booking Date: ${(job.data() as Map<String, dynamic>).containsKey('bookingDate') ? job['bookingDate'] : 'Not Selected'}",
+
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        /// SLOT
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              size: 18,
+                              color: Colors.green,
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: Text(
+                                "Preferred Slot: ${(job.data() as Map<String, dynamic>).containsKey('bookingSlot') ? job['bookingSlot'] : 'Not Selected'}",
+
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  /// BUTTONS
                   Row(
                     children: [
+                      /// DECLINE
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () => db.rejectJob(job.id),
+
                           icon: const Icon(Icons.close, size: 18),
+
                           label: const Text("Decline"),
+
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red.shade50,
+
                             foregroundColor: Colors.red,
+
                             elevation: 0,
+
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                         ),
                       ),
+
                       const SizedBox(width: 15),
+
+                      /// ACCEPT
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () => db.acceptJob(job.id),
+
                           icon: const Icon(Icons.check, size: 18),
+
                           label: const Text("Accept"),
+
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF1D4ED8),
+
                             foregroundColor: Colors.white,
+
                             elevation: 0,
+
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                         ),
@@ -1040,23 +1158,25 @@ class WorkerHistoryTab extends StatelessWidget {
         for (var job in jobs) {
           var data = job.data() as Map<String, dynamic>;
 
-          /// 🔴 CHANGE ONLY THIS IF FIELD NAME IS DIFFERENT
           Timestamp ts = data['createdAt'] ?? Timestamp.now();
 
           DateTime date = ts.toDate();
+
           String monthKey = "${date.year}-${date.month}";
 
           if (!groupedJobs.containsKey(monthKey)) {
             groupedJobs[monthKey] = [];
           }
+
           groupedJobs[monthKey]!.add(job);
         }
 
         var sortedKeys = groupedJobs.keys.toList()
-          ..sort((a, b) => b.compareTo(a)); // latest first
+          ..sort((a, b) => b.compareTo(a));
 
         return ListView(
           padding: const EdgeInsets.all(20),
+
           children: sortedKeys.map((monthKey) {
             var monthJobs = groupedJobs[monthKey]!;
 
@@ -1069,83 +1189,112 @@ class WorkerHistoryTab extends StatelessWidget {
 
             return ExpansionTile(
               initiallyExpanded: false,
+
               title: Text(
                 monthTitle,
+
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
+
               children: monthJobs.map((job) {
                 var data = job.data() as Map<String, dynamic>;
 
                 bool otpVerified = data['otpVerified'] ?? false;
+
                 bool isPaid = data['paymentStatus'] == "paid";
 
                 TextEditingController otpController = TextEditingController();
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 20),
+
                   padding: const EdgeInsets.all(22),
+
                   decoration: BoxDecoration(
                     color: Colors.white,
+
                     borderRadius: BorderRadius.circular(24),
+
                     border: Border.all(color: Colors.grey.shade200, width: 1),
+
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.04),
+
                         blurRadius: 20,
+
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
+
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+
                     children: [
                       /// HEADER
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 6,
                             ),
+
                             decoration: BoxDecoration(
                               color: const Color(0xffF4F6F9),
+
                               borderRadius: BorderRadius.circular(10),
                             ),
+
                             child: Text(
                               data['skill'] ?? "Skill",
+
                               overflow: TextOverflow.ellipsis,
+
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+
                                 fontSize: 13,
+
                                 color: Colors.black87,
                               ),
                             ),
                           ),
+
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 4,
                             ),
+
                             decoration: BoxDecoration(
                               color: isPaid
                                   ? Colors.green.shade50
                                   : Colors.orange.shade50,
+
                               borderRadius: BorderRadius.circular(8),
+
                               border: Border.all(
                                 color: isPaid
                                     ? Colors.green.shade200
                                     : Colors.orange.shade200,
                               ),
                             ),
+
                             child: Text(
                               isPaid ? "PAID" : "PENDING",
+
                               style: TextStyle(
                                 fontSize: 10,
+
                                 fontWeight: FontWeight.bold,
+
                                 color: isPaid
                                     ? Colors.green.shade700
                                     : Colors.orange.shade700,
@@ -1157,10 +1306,11 @@ class WorkerHistoryTab extends StatelessWidget {
 
                       const SizedBox(height: 15),
 
-                      /// 🕒 DATE & TIME
+                      /// CREATED TIME
                       Builder(
                         builder: (context) {
                           Timestamp ts = data['createdAt'] ?? Timestamp.now();
+
                           DateTime date = ts.toDate();
 
                           String formatted =
@@ -1169,6 +1319,7 @@ class WorkerHistoryTab extends StatelessWidget {
 
                           return Text(
                             formatted,
+
                             style: const TextStyle(
                               color: Colors.grey,
                               fontSize: 12,
@@ -1177,34 +1328,122 @@ class WorkerHistoryTab extends StatelessWidget {
                         },
                       ),
 
+                      const SizedBox(height: 10),
+
+                      /// CLIENT
                       Text(
                         "Client: ${data['userEmail'] ?? ''}",
+
                         overflow: TextOverflow.ellipsis,
+
                         style: const TextStyle(
                           color: Colors.black54,
                           fontSize: 13,
                         ),
                       ),
-                      const SizedBox(height: 5),
 
+                      const SizedBox(height: 12),
+
+                      /// BOOKING DATE + SLOT
+                      Container(
+                        padding: const EdgeInsets.all(14),
+
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+
+                          borderRadius: BorderRadius.circular(14),
+
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            /// DATE
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_today,
+                                  size: 18,
+                                  color: Color(0xFF1D4ED8),
+                                ),
+
+                                const SizedBox(width: 10),
+
+                                Expanded(
+                                  child: Text(
+                                    "Booking Date: ${data.containsKey('bookingDate') ? data['bookingDate'] : 'Not Selected'}",
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            /// SLOT
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.access_time,
+                                  size: 18,
+                                  color: Colors.green,
+                                ),
+
+                                const SizedBox(width: 10),
+
+                                Expanded(
+                                  child: Text(
+                                    "Preferred Slot: ${data.containsKey('bookingSlot') ? data['bookingSlot'] : 'Not Selected'}",
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      /// STATUS + PRICE
                       Row(
                         children: [
                           Expanded(
                             child: Text(
                               "Status: ${data['status']}",
+
                               overflow: TextOverflow.ellipsis,
+
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
+
                                 color: Colors.blueGrey,
                               ),
                             ),
                           ),
+
                           const SizedBox(width: 10),
+
                           Text(
                             "₹${data['totalPrice'] ?? 0}",
+
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
+
                               fontSize: 16,
+
                               color: Color(0xFF1D4ED8),
                             ),
                           ),
@@ -1213,24 +1452,29 @@ class WorkerHistoryTab extends StatelessWidget {
 
                       const SizedBox(height: 15),
 
-                      /// OTP
+                      /// OTP SECTION
+                      /// OTP SECTION
                       if (!otpVerified)
                         Container(
                           padding: const EdgeInsets.all(12),
+
                           decoration: BoxDecoration(
                             color: const Color(0xffEFF6FF),
                             borderRadius: BorderRadius.circular(15),
                           ),
+
                           child: Row(
                             children: [
                               Expanded(
                                 child: TextField(
                                   controller: otpController,
                                   keyboardType: TextInputType.number,
+
                                   decoration: InputDecoration(
                                     hintText: "Enter OTP",
                                     filled: true,
                                     fillColor: Colors.white,
+
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10),
                                       borderSide: BorderSide.none,
@@ -1238,7 +1482,9 @@ class WorkerHistoryTab extends StatelessWidget {
                                   ),
                                 ),
                               ),
+
                               const SizedBox(width: 10),
+
                               ElevatedButton(
                                 onPressed: () async {
                                   bool success = await db.verifyJobOtp(
@@ -1259,18 +1505,94 @@ class WorkerHistoryTab extends StatelessWidget {
                                     ),
                                   );
                                 },
+
                                 child: const Text("Verify"),
                               ),
                             ],
                           ),
                         ),
 
-                      if (otpVerified)
+                      /// ✅ AFTER OTP VERIFIED
+                      if (otpVerified && data['status'] != "completed")
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Job Verified ✅",
+
+                              style: TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            /// COMPLETE JOB BUTTON
+                          ],
+                        ),
+
+                      /// ✅ AFTER JOB COMPLETED -> PAYMENT VERIFY BUTTON
+                      if (data['status'] == "completed" && !isPaid)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Job Completed ✅",
+
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            SizedBox(
+                              width: double.infinity,
+
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  await FirebaseFirestore.instance
+                                      .collection("jobs")
+                                      .doc(job.id)
+                                      .update({"paymentStatus": "paid"});
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Payment Verified ✅"),
+                                    ),
+                                  );
+                                },
+
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+
+                                child: const Text("Verify Payment"),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                      /// ✅ AFTER PAYMENT VERIFIED
+                      if (data['status'] == "completed" && isPaid)
                         const Text(
-                          "Job Verified ✅",
+                          "Payment Verified ✅",
+
                           style: TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
                     ],
@@ -1289,7 +1611,9 @@ class WorkerHistoryTab extends StatelessWidget {
     int minute = date.minute;
 
     String period = hour >= 12 ? "PM" : "AM";
+
     hour = hour % 12;
+
     if (hour == 0) hour = 12;
 
     String min = minute.toString().padLeft(2, '0');
@@ -1313,6 +1637,7 @@ class WorkerHistoryTab extends StatelessWidget {
       "November",
       "December",
     ];
+
     return months[month - 1];
   }
 }
