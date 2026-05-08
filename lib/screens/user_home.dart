@@ -31,51 +31,64 @@ class _UserHomeState extends State<UserHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF4F6F9), // slightly cooler light grey
+      backgroundColor: const Color(0xFFF8FAFC), // Premium light grey (Slate 50)
       body: Stack(
         children: [
           // Premium Gradient Header
           Container(
-            height: 240,
+            height: 280,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF1E3A8A),
-                  Color(0xFF3B82F6),
-                ], // Darker rich blue to vibrant blue
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+                  Color(0xFF0F172A), // Slate 900
+                  Color(0xFF1D4ED8), // Blue 700
+                  Color(0xFF3B82F6), // Blue 500
+                ],
               ),
             ),
           ),
-          SafeArea(child: pages[currentIndex]),
+          
+          // Pages with slight fade transition
+          SafeArea(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: pages[currentIndex],
+            ),
+          ),
         ],
       ),
+      extendBody: true, // For floating bottom nav bar
       bottomNavigationBar: Container(
+        margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 15,
-              offset: const Offset(0, -4),
+              color: const Color(0xFF1D4ED8).withOpacity(0.1),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _navItem(Icons.person_outline, Icons.person, "Profile", 0),
-                _navItem(Icons.history_outlined, Icons.history, "History", 1),
-                _navItem(Icons.search_outlined, Icons.search, "Search", 2),
-              ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _navItem(Icons.person_outline, Icons.person, "Profile", 0),
+                  _navItem(Icons.history_outlined, Icons.history, "History", 1),
+                  _navItem(Icons.search_outlined, Icons.search, "Search", 2),
+                ],
+              ),
             ),
           ),
         ),
@@ -97,20 +110,25 @@ class _UserHomeState extends State<UserHome> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xffeff6ff)
-              : Colors.transparent, // faint blue bg
+              ? const Color(0xFF3B82F6).withOpacity(0.1) // Soft blue bg
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              selected ? iconFilled : iconOutlined,
-              color: selected ? const Color(0xFF1D4ED8) : Colors.grey.shade400,
-              size: 26,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+              child: Icon(
+                selected ? iconFilled : iconOutlined,
+                key: ValueKey<bool>(selected),
+                color: selected ? const Color(0xFF1D4ED8) : const Color(0xFF64748B), // Slate 500
+                size: 24,
+              ),
             ),
             if (selected) ...[
               const SizedBox(width: 8),
@@ -120,6 +138,7 @@ class _UserHomeState extends State<UserHome> {
                   color: Color(0xFF1D4ED8),
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],
@@ -163,39 +182,52 @@ class AccountTab extends StatelessWidget {
             /// MAIN PROFILE CARD
             /// 🔥 PREMIUM PROFILE CARD
             Container(
-              padding: const EdgeInsets.all(22),
+              padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                  colors: [Color(0xFF0F172A), Color(0xFF1D4ED8)], // Premium Slate to Blue
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.25),
-                    blurRadius: 25,
-                    offset: const Offset(0, 10),
+                    color: const Color(0xFF1D4ED8).withOpacity(0.3),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
                   ),
                 ],
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 36,
-                    backgroundColor: Colors.white,
-                    backgroundImage: data['profileImage'] != null
-                        ? MemoryImage(base64Decode(data['profileImage']))
-                        : null,
-                    child: data['profileImage'] == null
-                        ? const Icon(
-                            Icons.person,
-                            color: Color(0xFF1D4ED8),
-                            size: 30,
-                          )
-                        : null,
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.white,
+                      backgroundImage: data['profileImage'] != null
+                          ? MemoryImage(base64Decode(data['profileImage']))
+                          : null,
+                      child: data['profileImage'] == null
+                          ? const Icon(
+                              Icons.person,
+                              color: Color(0xFF1D4ED8),
+                              size: 35,
+                            )
+                          : null,
+                    ),
                   ),
-                  const SizedBox(width: 18),
+                  const SizedBox(width: 20),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,29 +236,32 @@ class AccountTab extends StatelessWidget {
                           name,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 24,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           email,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
 
                         if (phone.isNotEmpty)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
+                              horizontal: 12,
+                              vertical: 6,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withOpacity(0.1)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -236,15 +271,16 @@ class AccountTab extends StatelessWidget {
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 8),
                                 Icon(
                                   isVerified ? Icons.verified : Icons.error,
-                                  size: 16,
+                                  size: 18,
                                   color: isVerified
-                                      ? Colors.greenAccent
-                                      : Colors.redAccent,
+                                      ? const Color(0xFF10B981) // Emerald 500
+                                      : const Color(0xFFEF4444), // Red 500
                                 ),
                               ],
                             ),
@@ -601,56 +637,66 @@ class AccountTab extends StatelessWidget {
     bool isDanger = false,
     VoidCallback? onTap,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.grey.shade100),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isDanger
-                    ? Colors.red.withOpacity(0.1)
-                    : const Color(0xFF1D4ED8).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: isDanger ? Colors.red : const Color(0xFF1D4ED8),
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: isDanger ? Colors.red : Colors.black87,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64748B).withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          highlightColor: isDanger 
+              ? const Color(0xFFFEF2F2) 
+              : const Color(0xFFF0FDF4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDanger
+                        ? const Color(0xFFFEE2E2) // Red 100
+                        : const Color(0xFFEFF6FF), // Blue 50
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: isDanger 
+                        ? const Color(0xFFEF4444) // Red 500
+                        : const Color(0xFF2563EB), // Blue 600
+                    size: 24,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: isDanger ? const Color(0xFFEF4444) : const Color(0xFF1E293B), // Slate 800
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: const Color(0xFF94A3B8).withOpacity(0.5), // Slate 400
+                ),
+              ],
             ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: Colors.black26,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -750,23 +796,16 @@ class HistoryTab extends StatelessWidget {
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 20),
-
                   padding: const EdgeInsets.all(22),
-
                   decoration: BoxDecoration(
                     color: Colors.white,
-
                     borderRadius: BorderRadius.circular(24),
-
-                    border: Border.all(color: Colors.grey.shade200, width: 1),
-
+                    border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5), // Slate 100
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-
-                        blurRadius: 20,
-
-                        offset: const Offset(0, 8),
+                        color: const Color(0xFF94A3B8).withOpacity(0.08), // Slate 400
+                        blurRadius: 24,
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
@@ -791,37 +830,27 @@ class HistoryTab extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8),
-
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xffEFF6FF),
-
-                              borderRadius: BorderRadius.circular(10),
+                              color: const Color(0xFFEFF6FF), // Blue 50
+                              borderRadius: BorderRadius.circular(12),
                             ),
-
                             child: const Icon(
                               Icons.work_outline,
-
-                              color: Color(0xff1D4ED8),
-
-                              size: 18,
+                              color: Color(0xFF2563EB), // Blue 600
+                              size: 20,
                             ),
                           ),
-
-                          const SizedBox(width: 10),
-
+                          const SizedBox(width: 14),
                           Expanded(
                             child: Text(
                               data['workerName'] ?? "Worker",
-
                               overflow: TextOverflow.ellipsis,
-
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-
-                                fontSize: 16,
-
-                                color: Color(0xFF111827),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 17,
+                                color: Color(0xFF1E293B), // Slate 800
+                                letterSpacing: 0.2,
                               ),
                             ),
                           ),
@@ -832,72 +861,81 @@ class HistoryTab extends StatelessWidget {
 
                       /// ================= BOOKING DATE + SLOT =================
                       Container(
-                        padding: const EdgeInsets.all(14),
-
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-
-                          borderRadius: BorderRadius.circular(14),
-
-                          border: Border.all(color: Colors.grey.shade200),
+                          color: const Color(0xFFF8FAFC), // Slate 50
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
                         ),
-
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-
                           children: [
                             /// BOOKING DATE
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.calendar_today,
-
-                                  size: 18,
-
-                                  color: Color(0xFF1D4ED8),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.calendar_today,
+                                    size: 16,
+                                    color: Color(0xFF2563EB),
+                                  ),
                                 ),
-
-                                const SizedBox(width: 10),
-
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    "Booking Date: "
-                                    "${data.containsKey('bookingDate') ? data['bookingDate'] : 'Not Selected'}",
-
+                                    "Date: ${data.containsKey('bookingDate') ? data['bookingDate'] : 'Not Selected'}",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
-
                                       fontSize: 14,
+                                      color: Color(0xFF334155), // Slate 700
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-
-                            const SizedBox(height: 12),
-
+                            const SizedBox(height: 14),
                             /// SLOT
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.access_time,
-
-                                  size: 18,
-
-                                  color: Colors.green,
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.access_time,
+                                    size: 16,
+                                    color: Color(0xFF10B981), // Emerald 500
+                                  ),
                                 ),
-
-                                const SizedBox(width: 10),
-
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    "Preferred Slot: "
-                                    "${data.containsKey('bookingSlot') ? data['bookingSlot'] : 'Not Selected'}",
-
+                                    "Slot: ${data.containsKey('bookingSlot') ? data['bookingSlot'] : 'Not Selected'}",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
-
                                       fontSize: 14,
+                                      color: Color(0xFF334155),
                                     ),
                                   ),
                                 ),
@@ -946,43 +984,56 @@ class HistoryTab extends StatelessWidget {
 
                       const SizedBox(height: 15),
 
-                      /// 🔐 OTP
                       /// 🔐 OTP BEFORE VERIFICATION
                       if (otpVerified == false)
                         Container(
                           width: double.infinity,
-
-                          padding: const EdgeInsets.all(15),
-
+                          padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: Colors.orange.shade50,
-
-                            borderRadius: BorderRadius.circular(15),
-
-                            border: Border.all(color: Colors.orange.shade200),
+                            color: const Color(0xFFFFF7ED), // Orange 50
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFFFEDD5)), // Orange 100
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFF97316).withOpacity(0.05), // Orange 500
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-
                           child: Column(
                             children: [
                               const Text(
                                 "Share this OTP to start work",
-
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.orange,
+                                  color: Color(0xFFEA580C), // Orange 600
+                                  fontSize: 13,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
-
-                              const SizedBox(height: 5),
-
-                              Text(
-                                data['jobOtp'] ?? "---",
-
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  letterSpacing: 4,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.orange.shade800,
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.02),
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  data['jobOtp'] ?? "---",
+                                  style: const TextStyle(
+                                    fontSize: 28,
+                                    letterSpacing: 8,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFFC2410C), // Orange 700
+                                  ),
                                 ),
                               ),
                             ],
@@ -1333,76 +1384,50 @@ class HistoryTab extends StatelessWidget {
                               if (status == "completed" && isPaid && isReviewed)
                                 Container(
                                   margin: const EdgeInsets.only(top: 14),
-
                                   width: double.infinity,
-
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 14,
-                                  ),
-
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: Colors.green.shade50,
-
-                                    borderRadius: BorderRadius.circular(18),
-
-                                    border: Border.all(
-                                      color: Colors.green.shade200,
-                                    ),
+                                    color: const Color(0xFFF0FDF4), // Green 50
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFFDCFCE7)), // Green 100
                                   ),
-
                                   child: Row(
                                     children: [
-                                      /// SMALL SUCCESS ICON
                                       Container(
-                                        padding: const EdgeInsets.all(9),
-
+                                        padding: const EdgeInsets.all(8),
                                         decoration: const BoxDecoration(
                                           color: Colors.white,
                                           shape: BoxShape.circle,
                                         ),
-
                                         child: const Icon(
                                           Icons.check_circle,
-                                          color: Colors.green,
-                                          size: 22,
+                                          color: Color(0xFF10B981), // Emerald 500
+                                          size: 24,
                                         ),
                                       ),
-
-                                      const SizedBox(width: 12),
-
-                                      /// TEXTS
+                                      const SizedBox(width: 14),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           mainAxisSize: MainAxisSize.min,
-
                                           children: [
                                             const Text(
                                               "Review Submitted",
-
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w700,
                                                 fontSize: 14,
-                                                color: Colors.green,
+                                                color: Color(0xFF059669), // Emerald 600
                                               ),
                                             ),
-
-                                            const SizedBox(height: 3),
-
+                                            const SizedBox(height: 4),
                                             Text(
                                               "Thank you for your feedback.",
-
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
-
                                               style: TextStyle(
-                                                fontSize: 11.5,
+                                                fontSize: 12,
                                                 color: Colors.grey.shade700,
                                               ),
                                             ),
@@ -1519,31 +1544,22 @@ class _SearchTabState extends State<SearchTab> {
                   },
 
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-
-                    padding: const EdgeInsets.all(22),
-
+                    margin: const EdgeInsets.only(bottom: 24),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
-
-                      borderRadius: BorderRadius.circular(24),
-
-                      border: Border.all(color: Colors.grey.shade200, width: 1),
-
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5), // Slate 100
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-
-                          blurRadius: 20,
-
-                          offset: const Offset(0, 8),
+                          color: const Color(0xFF64748B).withOpacity(0.06), // Slate 500
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
                         ),
                       ],
                     ),
-
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-
                       children: [
                         /// PROFILE IMAGE
                         Container(
@@ -1588,66 +1604,53 @@ class _SearchTabState extends State<SearchTab> {
                               /// NAME
                               Text(
                                 data['name'] ?? "No Name",
-
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-
-                                  fontSize: 16,
-
-                                  color: Color(0xFF111827),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 18,
+                                  color: Color(0xFF0F172A), // Slate 900
+                                  letterSpacing: 0.3,
                                 ),
                               ),
-
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
 
                               /// SKILL
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
-
                                 decoration: BoxDecoration(
-                                  color: const Color(0xffEFF6FF),
-
-                                  borderRadius: BorderRadius.circular(6),
+                                  color: const Color(0xFFEFF6FF), // Blue 50
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: const Color(0xFFDBEAFE)), // Blue 100
                                 ),
-
                                 child: Text(
                                   data['skill'] ?? "Skill",
-
                                   style: const TextStyle(
-                                    color: Color(0xFF1D4ED8),
-
-                                    fontSize: 11,
-
-                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2563EB), // Blue 600
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               ),
-
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 10),
 
                               /// RATING
                               Row(
                                 children: [
                                   const Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                    size: 14,
+                                    Icons.star_rounded,
+                                    color: Color(0xFFF59E0B), // Amber 500
+                                    size: 18,
                                   ),
-
-                                  const SizedBox(width: 4),
-
+                                  const SizedBox(width: 6),
                                   Text(
                                     "${((data['averageRating'] ?? 0).toDouble()).toStringAsFixed(1)}",
-
                                     style: const TextStyle(
-                                      color: Colors.black54,
-
-                                      fontWeight: FontWeight.bold,
-
-                                      fontSize: 12,
+                                      color: Color(0xFF475569), // Slate 600
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ],
@@ -1713,12 +1716,21 @@ class _SearchTabState extends State<SearchTab> {
                                 onPressed: () async {
                                   final pickedDate = await showDatePicker(
                                     context: context,
-
                                     initialDate: DateTime.now(),
-
                                     firstDate: DateTime.now(),
-
                                     lastDate: DateTime(2030),
+                                    builder: (context, child) {
+                                      return Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                            primary: Color(0xFF2563EB), // header background color
+                                            onPrimary: Colors.white, // header text color
+                                            onSurface: Color(0xFF0F172A), // body text color
+                                          ),
+                                        ),
+                                        child: child!,
+                                      );
+                                    },
                                   );
 
                                   if (pickedDate != null) {
@@ -1727,29 +1739,25 @@ class _SearchTabState extends State<SearchTab> {
                                     });
                                   }
                                 },
-
-                                icon: const Icon(Icons.calendar_today),
-
+                                icon: const Icon(Icons.calendar_today, size: 18),
                                 label: Text(
                                   selectedDates[worker.id] == null
                                       ? "Select Booking Date"
                                       : selectedDates[worker.id]
                                             .toString()
                                             .split(" ")[0],
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
-
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1D4ED8),
-
+                                  backgroundColor: const Color(0xFF2563EB), // Blue 600
                                   foregroundColor: Colors.white,
-
+                                  elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                    horizontal: 14,
+                                    vertical: 14,
+                                    horizontal: 16,
                                   ),
                                 ),
                               ),
@@ -1821,172 +1829,346 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
     double charge = (data['charges'] ?? 0).toDouble();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Worker Details")),
+      backgroundColor: const Color(0xFFF8FAFC), // Slate 50
+      appBar: AppBar(
+        title: const Text("Worker Details", style: TextStyle(fontWeight: FontWeight.w700)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      extendBodyBehindAppBar: true,
       body: SingleChildScrollView(
-        // ✅ FIX 1: prevent blank screen
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              /// PROFILE
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: Colors.white,
-                backgroundImage: data['profileImage'] != null
-                    ? MemoryImage(base64Decode(data['profileImage']))
-                    : null,
-                child: data['profileImage'] == null
-                    ? const Icon(Icons.person, color: Color(0xff1D4ED8))
-                    : null,
-              ),
-
-              const SizedBox(height: 15),
-
-              Text(
-                data['name'] ?? "No Name", // ✅ FIX 2: null safety
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+        child: Column(
+          children: [
+            /// HERO PROFILE SECTION
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 100, bottom: 40, left: 20, right: 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)], // Slate 900 to Blue 900
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40),
                 ),
               ),
-
-              const SizedBox(height: 5),
-
-              /// ⭐ AVERAGE RATING
-              Text(
-                "⭐ ${((data['averageRating'] ?? 0).toDouble()).toStringAsFixed(1)} "
-                "(${data['totalReviews'] ?? 0} reviews)",
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 4),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.white,
+                      backgroundImage: data['profileImage'] != null
+                          ? MemoryImage(base64Decode(data['profileImage']))
+                          : null,
+                      child: data['profileImage'] == null
+                          ? const Icon(Icons.person, color: Color(0xFF1D4ED8), size: 40)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    data['name'] ?? "No Name",
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, color: Color(0xFFFBBF24), size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          "${((data['averageRating'] ?? 0).toDouble()).toStringAsFixed(1)} (${data['totalReviews'] ?? 0} reviews)",
+                          style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    data['skill'] ?? "No Skill",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.8),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
+            ),
 
-              const SizedBox(height: 5),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// 💰 CHARGES
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF64748B).withOpacity(0.06),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Hourly Rate",
+                          style: TextStyle(fontSize: 16, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          charge == 0 ? "Not set" : "₹$charge / hr",
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1D4ED8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-              Text(data['skill'] ?? "No Skill"),
+                  const SizedBox(height: 24),
 
-              const SizedBox(height: 10),
+                  const Text(
+                    "Information",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                  ),
+                  const SizedBox(height: 16),
 
-              /// 💰 CHARGES
-              Text(
-                charge == 0
-                    ? "No charges set"
-                    : "₹$charge / hour", // ✅ FIX 3: fallback UI
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                  /// DETAILS
+                  _infoTile("Phone", data['phone'] ?? "Not provided", Icons.phone_outlined),
+                  _infoTile("Experience", data['experience'] ?? "Not provided", Icons.work_outline),
+                  _infoTile(
+                    "Availability",
+                    data['isAvailable'] == true ? "Available" : "Offline",
+                    Icons.event_available_outlined,
+                    isSuccess: data['isAvailable'] == true,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    "Book Service",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                  ),
+                  const SizedBox(height: 16),
+
+                  /// ⏱ HOURS INPUT
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF64748B).withOpacity(0.06),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        TextField(
+                          controller: hoursController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: "Enter Hours",
+                            prefixIcon: const Icon(Icons.timer_outlined, color: Color(0xFF2563EB)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                          ),
+                          onChanged: (val) {
+                            int hours = int.tryParse(val) ?? 0;
+                            setState(() {
+                              totalPrice = hours * charge;
+                            });
+                          },
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// 💵 TOTAL
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFDBEAFE)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Total Estimated:",
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E3A8A)),
+                              ),
+                              Text(
+                                "₹$totalPrice",
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1D4ED8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        /// 📦 HIRE BUTTON
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              int hours = int.tryParse(hoursController.text) ?? 0;
+
+                              if (hours == 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Enter valid hours"), backgroundColor: Color(0xFFEF4444)),
+                                );
+                                return;
+                              }
+
+                              double total = hours * charge;
+
+                              await db.sendJobRequest(
+                                workerId: workerId,
+                                workerName: data['name'] ?? "Unknown",
+                                skill: data['skill'] ?? "General Service",
+                                hours: hours,
+                                charge: charge,
+                                totalPrice: total,
+                                bookingDate: DateTime.now().toString().split(" ")[0],
+                                bookingSlot: "09:00-11:00",
+                              );
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Job Request Sent"), backgroundColor: Color(0xFF10B981)),
+                              );
+
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1D4ED8),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text("Hire Worker", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
               ),
-
-              const SizedBox(height: 20),
-
-              /// DETAILS
-              _infoTile("Phone", data['phone'] ?? "Not provided"),
-              _infoTile("Experience", data['experience'] ?? "Not provided"),
-              _infoTile(
-                "Availability",
-                data['isAvailable'] == true ? "Available" : "Offline",
-              ),
-
-              const SizedBox(height: 20),
-
-              /// ⏱ HOURS INPUT
-              TextField(
-                controller: hoursController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: "Enter Hours",
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              /// 🧮 CALCULATE
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    int hours = int.tryParse(hoursController.text) ?? 0;
-
-                    setState(() {
-                      totalPrice = hours * charge;
-                    });
-                  },
-                  child: const Text("Calculate Price"),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              /// 💵 TOTAL
-              Text(
-                "Total: ₹$totalPrice",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 20), // ✅ FIX 4: replace Spacer()
-              /// 📦 HIRE (UNCHANGED)
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    int hours = int.tryParse(hoursController.text) ?? 0;
-
-                    if (hours == 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Enter valid hours")),
-                      );
-                      return;
-                    }
-
-                    double total = hours * charge;
-
-                    await db.sendJobRequest(
-                      workerId: workerId,
-                      workerName: data['name'] ?? "Unknown",
-                      skill: data['skill'] ?? "General Service",
-
-                      hours: hours,
-                      charge: charge,
-                      totalPrice: total,
-
-                      // ✅ NEW
-                      bookingDate: DateTime.now().toString().split(" ")[0],
-
-                      bookingSlot: "09:00-11:00",
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Job Request Sent")),
-                    );
-
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Hire Worker"),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _infoTile(String title, String value) {
+  Widget _infoTile(String title, String value, IconData icon, {bool isSuccess = false}) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(15),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(15),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF64748B).withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isSuccess ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: isSuccess ? const Color(0xFF10B981) : const Color(0xFF64748B),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: isSuccess ? const Color(0xFF10B981) : const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -2011,17 +2193,36 @@ void showReviewDialog(
     builder: (_) => StatefulBuilder(
       builder: (context, setState) {
         return AlertDialog(
-          backgroundColor: Colors.grey.shade100,
+          backgroundColor: Colors.white,
+          elevation: 24,
+          shadowColor: Colors.black.withOpacity(0.2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
           ),
-          title: const Text("Rate Worker"),
+          contentPadding: const EdgeInsets.all(24),
+          title: const Center(
+            child: Text(
+              "Rate Experience",
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Text(
+                "How was your service with this worker?",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              
               /// ⭐ STAR SELECTOR (BETTER UX)
-              Wrap(
-                alignment: WrapAlignment.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (index) {
                   return GestureDetector(
                     onTap: () {
@@ -2031,70 +2232,112 @@ void showReviewDialog(
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Icon(
-                        Icons.star,
-                        size: 32,
-                        color: index < rating
-                            ? Colors.amber
-                            : Colors.grey.shade400,
+                      child: AnimatedScale(
+                        scale: index < rating ? 1.1 : 1.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(
+                          Icons.star_rounded,
+                          size: 40,
+                          color: index < rating
+                              ? const Color(0xFFF59E0B) // Amber 500
+                              : const Color(0xFFE2E8F0), // Slate 200
+                        ),
                       ),
                     ),
                   );
                 }),
               ),
+              const SizedBox(height: 24),
 
               TextField(
                 controller: reviewController,
+                maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: "Write your review",
+                  hintText: "Write your review...",
+                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
                 ),
               ),
             ],
           ),
+          actionsPadding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
           actions: [
-            TextButton(
-              onPressed: isLoading ? null : () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: isLoading ? null : () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text("Cancel", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isLoading
+                        ? null
+                        : () async {
+                            setState(() => isLoading = true);
 
-            ElevatedButton(
-              onPressed: isLoading
-                  ? null
-                  : () async {
-                      setState(() => isLoading = true);
+                            try {
+                              await db.submitReview(
+                                jobId: jobId,
+                                workerId: job['workerId'] ?? "",
+                                userId: job['userId'] ?? FirebaseAuth.instance.currentUser!.uid,
+                                rating: rating,
+                                reviewText: reviewController.text.trim(),
+                              );
 
-                      try {
-                        await db.submitReview(
-                          jobId: jobId,
-                          workerId: job['workerId'] ?? "",
-                          userId:
-                              job['userId'] ??
-                              FirebaseAuth.instance.currentUser!.uid,
-                          rating: rating,
-                          reviewText: reviewController.text.trim(),
-                        );
+                              Navigator.pop(context);
 
-                        Navigator.pop(context);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Review Submitted ✅")),
-                        );
-                      } catch (e) {
-                        setState(() => isLoading = false);
-
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
-                    },
-              child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Submit"),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Review Submitted ✅"),
+                                  backgroundColor: Color(0xFF10B981),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            } catch (e) {
+                              setState(() => isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(e.toString()),
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D4ED8),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          )
+                        : const Text("Submit", style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
             ),
           ],
         );
