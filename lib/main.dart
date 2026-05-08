@@ -37,62 +37,100 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-
-      /// 🎨 GLOBAL THEME
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.background,
-
-        primaryColor: AppColors.primary,
-
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-        ),
-
-        cardColor: AppColors.card,
-
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: AppColors.textPrimary, fontSize: 16),
-          bodyMedium: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-        ),
-
-        /// Buttons
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.buttonText,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (_, ThemeMode currentMode, __) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          themeMode: currentMode,
+          
+          /// 🎨 GLOBAL THEME
+          theme: ThemeData(
+            scaffoldBackgroundColor: AppColors.background,
+            primaryColor: AppColors.primary,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
             ),
+            cardColor: AppColors.card,
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+              bodyMedium: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.buttonText,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: AppColors.card,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.border),
+              ),
+            ),
+            dividerColor: AppColors.border,
           ),
-        ),
 
-        /// Input fields
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: AppColors.card,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.border),
+          /// 🌙 DARK THEME
+          darkTheme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: const Color(0xFF111827),
+            primaryColor: AppColors.primary,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1F2937),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
+            ),
+            cardColor: const Color(0xFF1F2937),
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(color: Colors.white, fontSize: 16),
+              bodyMedium: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.buttonText,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: const Color(0xFF1F2937),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF374151)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF374151)),
+              ),
+            ),
+            dividerColor: const Color(0xFF374151),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.border),
-          ),
-        ),
 
-        /// Divider
-        dividerColor: AppColors.border,
-      ),
-
-      home: const SplashScreen(),
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }

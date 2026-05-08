@@ -15,6 +15,7 @@ import 'package:geocoding/geocoding.dart';
 
 import 'dart:convert';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import '../main.dart';
 
 class UserHome extends StatefulWidget {
   const UserHome({super.key});
@@ -161,6 +162,7 @@ class AccountTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final uid = firebaseAuth.currentUser!.uid;
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return StreamBuilder<DocumentSnapshot>(
       stream: firestore.collection("users").doc(uid).snapshots(),
@@ -174,11 +176,10 @@ class AccountTab extends StatelessWidget {
         String name = data["name"] ?? "No Name";
         String email = data["email"] ?? "No Email";
         String phone = data["phone"] ?? "";
-        bool isVerified = data["isPhoneVerified"] ?? false;
         String location = data["location"] ?? "San Francisco, California";
 
         return Container(
-          color: const Color(0xFFF8FAFC),
+          color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
           child: Column(
             children: [
               Padding(
@@ -186,18 +187,18 @@ class AccountTab extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
-                    const Text(
+                    Icon(Icons.arrow_back, color: isDark ? Colors.white : const Color(0xFF1E293B)),
+                    Text(
                       "Profile",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E293B),
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
                       ),
                     ),
                     GestureDetector(
                       onTap: () => _showEditDialog(context, uid, data),
-                      child: const Icon(Icons.edit_outlined, color: Color(0xFF1E293B)),
+                      child: Icon(Icons.edit_outlined, color: isDark ? Colors.white : const Color(0xFF1E293B)),
                     ),
                   ],
                 ),
@@ -209,14 +210,15 @@ class AccountTab extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF64748B).withOpacity(0.08),
-                            blurRadius: 30,
-                            offset: const Offset(0, 10),
-                          ),
+                          if (!isDark)
+                            BoxShadow(
+                              color: const Color(0xFF64748B).withOpacity(0.08),
+                              blurRadius: 30,
+                              offset: const Offset(0, 10),
+                            ),
                         ],
                       ),
                       child: Row(
@@ -278,18 +280,18 @@ class AccountTab extends StatelessWidget {
                               children: [
                                 Text(
                                   name,
-                                  style: const TextStyle(
-                                    color: Color(0xFF1E293B),
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : const Color(0xFF1E293B),
                                     fontWeight: FontWeight.w700,
                                     fontSize: 22,
                                     letterSpacing: -0.5,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                _infoRow(Icons.email_outlined, email),
-                                _infoRow(Icons.location_on_outlined, location),
+                                _infoRow(context, Icons.email_outlined, email),
+                                _infoRow(context, Icons.location_on_outlined, location),
                                 if (phone.isNotEmpty)
-                                  _infoRow(Icons.phone_outlined, phone),
+                                  _infoRow(context, Icons.phone_outlined, phone),
                               ],
                             ),
                           ),
@@ -313,36 +315,41 @@ class AccountTab extends StatelessWidget {
 
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: isDark ? const Color(0xFF1F2937) : Colors.white,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF64748B).withOpacity(0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
+                          if (!isDark)
+                            BoxShadow(
+                              color: const Color(0xFF64748B).withOpacity(0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
                         ],
                       ),
                       child: Column(
                         children: [
-                          _tile(Icons.person_outline, "Account Details", onTap: () => _showEditDialog(context, uid, data)),
-                          if (!isVerified)
-                            _tile(Icons.phone_android_outlined, "Verify Phone Number", onTap: () => _showOtpDialog(context, uid)),
-                          _tile(Icons.lock_outline, "Change Password"),
-                          _tile(Icons.notifications_outlined, "Notifications"),
-                          _tile(Icons.language_outlined, "Language"),
+                          _tile(context, Icons.person_outline, "Account Details", onTap: () => _showEditDialog(context, uid, data)),
+                          _tile(context, Icons.lock_outline, "Change Password", onTap: () => _showChangePasswordDialog(context)),
+                          _tile(context, Icons.location_on_outlined, "Set Location", onTap: () => _openLocationPicker(context, uid)),
                           _tile(
+                            context,
                             Icons.dark_mode_outlined,
                             "Theme Mode",
-                            trailing: Switch(
-                              value: true,
-                              onChanged: (val) {},
-                              activeColor: const Color(0xFF2563EB),
+                            showDivider: false,
+                            trailing: ValueListenableBuilder<ThemeMode>(
+                              valueListenable: MyApp.themeNotifier,
+                              builder: (_, ThemeMode currentMode, __) {
+                                bool isDarkMode = currentMode == ThemeMode.dark;
+                                return Switch(
+                                  value: isDarkMode,
+                                  onChanged: (val) {
+                                    MyApp.themeNotifier.value = val ? ThemeMode.dark : ThemeMode.light;
+                                  },
+                                  activeColor: const Color(0xFF2563EB),
+                                );
+                              },
                             ),
                           ),
-                          _tile(Icons.tune_outlined, "Preferences"),
-                          _tile(Icons.location_on_outlined, "Set Location", onTap: () => _openLocationPicker(context, uid)),
-                          _tile(Icons.help_outline, "Help", showDivider: false),
                         ],
                       ),
                     ),
@@ -351,6 +358,11 @@ class AccountTab extends StatelessWidget {
                     Center(
                       child: TextButton.icon(
                         onPressed: () async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (_) => const Center(child: CircularProgressIndicator()),
+                          );
                           await auth.logout();
                           if (context.mounted) {
                             Navigator.pushAndRemoveUntil(
@@ -387,18 +399,19 @@ class AccountTab extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String text) {
+  Widget _infoRow(BuildContext context, IconData icon, String text) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xFF64748B)),
+          Icon(icon, size: 18, color: isDark ? Colors.white70 : const Color(0xFF64748B)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                color: Color(0xFF475569),
+              style: TextStyle(
+                color: isDark ? Colors.white70 : const Color(0xFF475569),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -413,14 +426,16 @@ class AccountTab extends StatelessWidget {
 
   void _openLocationPicker(BuildContext context, String uid) {
     LatLng? selectedLatLng;
+    bool isLoading = false;
 
     showDialog(
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setState) {
+          bool isDark = Theme.of(context).brightness == Brightness.dark;
           return AlertDialog(
-            backgroundColor: Colors.grey.shade200,
-            title: const Text("Select Your Location"),
+            backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.grey.shade200,
+            title: Text("Select Your Location", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
             content: SizedBox(
               height: 300,
               width: double.maxFinite,
@@ -459,8 +474,12 @@ class AccountTab extends StatelessWidget {
               ),
             ),
             actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
               ElevatedButton(
-                onPressed: () async {
+                onPressed: isLoading ? null : () async {
                   if (selectedLatLng == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Please select a location")),
@@ -468,6 +487,7 @@ class AccountTab extends StatelessWidget {
                     return;
                   }
 
+                  setState(() => isLoading = true);
                   try {
                     List<Placemark> placemarks = await placemarkFromCoordinates(
                       selectedLatLng!.latitude,
@@ -492,16 +512,21 @@ class AccountTab extends StatelessWidget {
                           "location": city,
                         });
 
-                    Navigator.pop(context);
+                    if (context.mounted) Navigator.pop(context);
                   } catch (e) {
                     print("Location Error: $e");
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Failed to get location")),
-                    );
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Failed to get location")),
+                      );
+                      setState(() => isLoading = false);
+                    }
                   }
                 },
-                child: const Text("Save Location"),
+                child: isLoading
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text("Save Location"),
               ),
             ],
           );
@@ -521,6 +546,12 @@ class AccountTab extends StatelessWidget {
     final file = await _pickImage();
     if (file == null) return;
 
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
     try {
       String base64Image = await compressAndConvertToBase64(file);
 
@@ -533,13 +564,15 @@ class AccountTab extends StatelessWidget {
         "profileImage": base64Image,
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Profile Updated")));
+      if (context.mounted) {
+        Navigator.pop(context); // close dialog
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile Updated")));
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (context.mounted) {
+        Navigator.pop(context); // close dialog
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
@@ -563,43 +596,78 @@ class AccountTab extends StatelessWidget {
 
     final otpService = OtpService();
     bool otpSent = false;
+    bool isLoading = false;
 
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            bool isDark = Theme.of(context).brightness == Brightness.dark;
             return AlertDialog(
-              backgroundColor: Colors.grey.shade200,
-              title: const Text("Verify Phone"),
+              backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.grey.shade200,
+              title: Text("Verify Phone", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (!otpSent) TextField(controller: phoneController),
-                  if (otpSent) TextField(controller: otpController),
+                  if (!otpSent) TextField(
+                    controller: phoneController,
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                    decoration: InputDecoration(
+                      labelText: "Phone Number",
+                      labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                    ),
+                  ),
+                  if (otpSent) TextField(
+                    controller: otpController,
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                    decoration: InputDecoration(
+                      labelText: "OTP",
+                      labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                    ),
+                  ),
                 ],
               ),
               actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
                 ElevatedButton(
-                  onPressed: () async {
-                    if (!otpSent) {
-                      await otpService.sendOtp("+91${phoneController.text}");
-                      setState(() => otpSent = true);
-                    } else {
-                      await otpService.verifyOtp(otpController.text);
-
-                      await FirebaseFirestore.instance
-                          .collection("users")
-                          .doc(uid)
-                          .update({
-                            "phone": "+91${phoneController.text}",
-                            "isPhoneVerified": true,
+                  onPressed: isLoading ? null : () async {
+                    setState(() => isLoading = true);
+                    try {
+                      if (!otpSent) {
+                        await otpService.sendOtp("+91${phoneController.text}");
+                        if (context.mounted) {
+                          setState(() {
+                            otpSent = true;
+                            isLoading = false;
                           });
+                        }
+                      } else {
+                        await otpService.verifyOtp(otpController.text);
 
-                      Navigator.pop(context);
+                        await FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(uid)
+                            .update({
+                              "phone": "+91${phoneController.text}",
+                              "isPhoneVerified": true,
+                            });
+
+                        if (context.mounted) Navigator.pop(context);
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        setState(() => isLoading = false);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
                     }
                   },
-                  child: Text(otpSent ? "Verify" : "Send OTP"),
+                  child: isLoading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : Text(otpSent ? "Verify" : "Send OTP"),
                 ),
               ],
             );
@@ -622,118 +690,232 @@ class AccountTab extends StatelessWidget {
       text: data["phone"] ?? "",
     );
 
+    bool isLoading = false;
+
     showDialog(
       context: context,
       builder: (_) {
-        return Dialog(
-          backgroundColor: Colors.grey.shade200,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Edit Profile",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool isDark = Theme.of(context).brightness == Brightness.dark;
+            return Dialog(
+              backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.grey.shade200,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Edit Profile",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextField(
+                      controller: nameController,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                      decoration: InputDecoration(
+                        labelText: "Name",
+                        labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    TextField(
+                      controller: phoneController,
+                      enabled: false,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                      decoration: InputDecoration(
+                        labelText: "Phone (Verified)",
+                        labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : () async {
+                          setState(() => isLoading = true);
+                          try {
+                            await FirebaseFirestore.instance
+                                .collection("users")
+                                .doc(uid)
+                                .update({"name": nameController.text});
+
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Profile Updated")),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              setState(() => isLoading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            }
+                          }
+                        },
+                        child: isLoading
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Text("Save"),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+            );
+          }
+        );
+      },
+    );
+  }
 
-                const SizedBox(height: 20),
+  void _showChangePasswordDialog(BuildContext context) {
+    TextEditingController oldPasswordController = TextEditingController();
+    TextEditingController newPasswordController = TextEditingController();
+    bool isLoading = false;
 
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: "Name",
-                    border: OutlineInputBorder(),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool isDark = Theme.of(context).brightness == Brightness.dark;
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+              title: Text("Change Password", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: oldPasswordController,
+                    obscureText: true,
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                    decoration: InputDecoration(
+                      labelText: "Old Password",
+                      labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                    ),
                   ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: newPasswordController,
+                    obscureText: true,
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                    decoration: InputDecoration(
+                      labelText: "New Password",
+                      labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
                 ),
-
-                const SizedBox(height: 12),
-
-                TextField(
-                  controller: phoneController,
-                  enabled: false,
-                  decoration: const InputDecoration(
-                    labelText: "Phone (Verified)",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await FirebaseFirestore.instance
-                          .collection("users")
-                          .doc(uid)
-                          .update({"name": nameController.text});
-
-                      Navigator.pop(context);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Profile Updated")),
-                      );
-                    },
-                    child: const Text("Save"),
-                  ),
+                ElevatedButton(
+                  onPressed: isLoading ? null : () async {
+                    setState(() => isLoading = true);
+                    try {
+                      User? user = FirebaseAuth.instance.currentUser;
+                      if (user != null) {
+                        AuthCredential credential = EmailAuthProvider.credential(
+                          email: user.email!,
+                          password: oldPasswordController.text,
+                        );
+                        await user.reauthenticateWithCredential(credential);
+                        await user.updatePassword(newPasswordController.text);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Password changed successfully")),
+                          );
+                          Navigator.pop(context);
+                        }
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        setState(() => isLoading = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error: ${e.toString()}")),
+                        );
+                      }
+                    }
+                  },
+                  child: isLoading
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text("Save"),
                 ),
               ],
-            ),
-          ),
+            );
+          }
         );
       },
     );
   }
 
   Widget _tile(
+    BuildContext context,
     IconData icon,
     String text, {
     VoidCallback? onTap,
     Widget? trailing,
     bool showDivider = true,
   }) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
-        InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  color: const Color(0xFF64748B),
-                  size: 24,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    text,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      color: Color(0xFF1E293B),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            splashColor: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+            highlightColor: isDark ? Colors.white12 : const Color(0xFFF1F5F9),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              child: Row(
+                children: [
+                  Icon(
+                    icon,
+                    color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
                     ),
                   ),
-                ),
-                trailing ?? const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Color(0xFFCBD5E1),
-                ),
-              ],
+                  trailing ?? Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: isDark ? Colors.white30 : const Color(0xFFCBD5E1),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
         if (showDivider)
-          const Divider(
+          Divider(
             height: 1,
             thickness: 1,
-            color: Color(0xFFF1F5F9),
+            color: isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9),
             indent: 60,
             endIndent: 20,
           ),
@@ -754,6 +936,7 @@ class HistoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     final db = DatabaseService();
 
     return StreamBuilder<QuerySnapshot>(
@@ -837,15 +1020,16 @@ class HistoryTab extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 20),
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5), // Slate 100
+                    border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9), width: 1.5), // Slate 100
                     boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF94A3B8).withOpacity(0.08), // Slate 400
-                        blurRadius: 24,
-                        offset: const Offset(0, 10),
-                      ),
+                      if (!isDark)
+                        BoxShadow(
+                          color: const Color(0xFF94A3B8).withOpacity(0.08), // Slate 400
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
                     ],
                   ),
 
@@ -902,9 +1086,9 @@ class HistoryTab extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC), // Slate 50
+                          color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC), // Slate 50
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
+                          border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)), // Slate 200
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -915,14 +1099,15 @@ class HistoryTab extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
                                     borderRadius: BorderRadius.circular(8),
                                     boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.03),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
+                                      if (!isDark)
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.03),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
                                     ],
                                   ),
                                   child: const Icon(
@@ -951,14 +1136,15 @@ class HistoryTab extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
                                     borderRadius: BorderRadius.circular(8),
                                     boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.03),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
+                                      if (!isDark)
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.03),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
                                     ],
                                   ),
                                   child: const Icon(
@@ -1113,25 +1299,36 @@ class HistoryTab extends StatelessWidget {
 
                                 child: ElevatedButton(
                                   onPressed: () async {
-                                    await FirebaseFirestore.instance
-                                        .collection("jobs")
-                                        .doc(job.id)
-                                        .update({
-                                          "status": "completed",
-                                          "updatedAt":
-                                              FieldValue.serverTimestamp(),
-                                        });
+                                    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+                                    try {
+                                      await FirebaseFirestore.instance
+                                          .collection("jobs")
+                                          .doc(job.id)
+                                          .update({
+                                            "status": "completed",
+                                            "updatedAt":
+                                                FieldValue.serverTimestamp(),
+                                          });
 
-                                    await FirebaseFirestore.instance
-                                        .collection("workers")
-                                        .doc(data['workerId'])
-                                        .update({"isWorking": false});
+                                      await FirebaseFirestore.instance
+                                          .collection("workers")
+                                          .doc(data['workerId'])
+                                          .update({"isWorking": false});
 
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Job Completed ✅"),
-                                      ),
-                                    );
+                                      if (context.mounted) {
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Job Completed ✅"),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                      }
+                                    }
                                   },
 
                                   style: ElevatedButton.styleFrom(
@@ -1512,6 +1709,7 @@ class _SearchTabState extends State<SearchTab> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     final db = DatabaseService();
 
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -1586,15 +1784,16 @@ class _SearchTabState extends State<SearchTab> {
                     margin: const EdgeInsets.only(bottom: 24),
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5), // Slate 100
+                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9), width: 1.5), // Slate 100
                       boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF64748B).withOpacity(0.06), // Slate 500
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
+                        if (!isDark)
+                          BoxShadow(
+                            color: const Color(0xFF64748B).withOpacity(0.06), // Slate 500
+                            blurRadius: 24,
+                            offset: const Offset(0, 12),
+                          ),
                       ],
                     ),
                     child: Row(
@@ -1643,10 +1842,10 @@ class _SearchTabState extends State<SearchTab> {
                               /// NAME
                               Text(
                                 data['name'] ?? "No Name",
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 18,
-                                  color: Color(0xFF0F172A), // Slate 900
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A), // Slate 900
                                   letterSpacing: 0.3,
                                 ),
                               ),
@@ -1716,7 +1915,7 @@ class _SearchTabState extends State<SearchTab> {
 
                                       filled: true,
 
-                                      fillColor: Colors.grey.shade50,
+                                      fillColor: isDark ? const Color(0xFF111827) : Colors.grey.shade50,
 
                                       contentPadding:
                                           const EdgeInsets.symmetric(
@@ -1856,6 +2055,7 @@ class WorkerDetailScreen extends StatefulWidget {
 class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
   final db = DatabaseService();
   final TextEditingController hoursController = TextEditingController();
+  bool isLoading = false;
 
   double totalPrice = 0;
 
@@ -1867,8 +2067,9 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
 
     double charge = (data['charges'] ?? 0).toDouble();
 
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Slate 50
+      backgroundColor: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC), // Slate 50
       appBar: AppBar(
         title: const Text("Worker Details", style: TextStyle(fontWeight: FontWeight.w700)),
         backgroundColor: Colors.transparent,
@@ -1971,22 +2172,23 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF64748B).withOpacity(0.06),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
+                        if (!isDark)
+                          BoxShadow(
+                            color: const Color(0xFF64748B).withOpacity(0.06),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
                       ],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           "Hourly Rate",
-                          style: TextStyle(fontSize: 16, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 16, color: isDark ? Colors.white70 : const Color(0xFF64748B), fontWeight: FontWeight.w600),
                         ),
                         Text(
                           charge == 0 ? "Not set" : "₹$charge / hr",
@@ -2002,9 +2204,9 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
 
                   const SizedBox(height: 24),
 
-                  const Text(
+                  Text(
                     "Information",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A)),
                   ),
                   const SizedBox(height: 16),
 
@@ -2020,23 +2222,24 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
 
                   const SizedBox(height: 24),
 
-                  const Text(
+                  Text(
                     "Book Service",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A)),
                   ),
                   const SizedBox(height: 16),
 
                   /// ⏱ HOURS INPUT
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1F2937) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF64748B).withOpacity(0.06),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
+                        if (!isDark)
+                          BoxShadow(
+                            color: const Color(0xFF64748B).withOpacity(0.06),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
                       ],
                     ),
                     padding: const EdgeInsets.all(20),
@@ -2061,7 +2264,7 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                               borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
                             ),
                             filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
+                            fillColor: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
                           ),
                           onChanged: (val) {
                             int hours = int.tryParse(val) ?? 0;
@@ -2107,34 +2310,44 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () async {
+                            onPressed: isLoading ? null : () async {
                               int hours = int.tryParse(hoursController.text) ?? 0;
-
+                              
                               if (hours == 0) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text("Enter valid hours"), backgroundColor: Color(0xFFEF4444)),
                                 );
                                 return;
                               }
+                              
+                              setState(() => isLoading = true);
 
                               double total = hours * charge;
 
-                              await db.sendJobRequest(
-                                workerId: workerId,
-                                workerName: data['name'] ?? "Unknown",
-                                skill: data['skill'] ?? "General Service",
-                                hours: hours,
-                                charge: charge,
-                                totalPrice: total,
-                                bookingDate: DateTime.now().toString().split(" ")[0],
-                                bookingSlot: "09:00-11:00",
-                              );
+                              try {
+                                await db.sendJobRequest(
+                                  workerId: workerId,
+                                  workerName: data['name'] ?? "Unknown",
+                                  skill: data['skill'] ?? "General Service",
+                                  hours: hours,
+                                  charge: charge,
+                                  totalPrice: total,
+                                  bookingDate: DateTime.now().toString().split(" ")[0],
+                                  bookingSlot: "09:00-11:00",
+                                );
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Job Request Sent"), backgroundColor: Color(0xFF10B981)),
-                              );
-
-                              Navigator.pop(context);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Job Request Sent"), backgroundColor: Color(0xFF10B981)),
+                                  );
+                                  Navigator.pop(context);
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  setState(() => isLoading = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                }
+                              }
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF1D4ED8),
@@ -2144,7 +2357,9 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            child: const Text("Hire Worker", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: isLoading
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                : const Text("Hire Worker", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
@@ -2162,18 +2377,20 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
   }
 
   Widget _infoTile(String title, String value, IconData icon, {bool isSuccess = false}) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF1F2937) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF64748B).withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          if (!isDark)
+            BoxShadow(
+              color: const Color(0xFF64748B).withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
         ],
       ),
       child: Row(
@@ -2202,7 +2419,7 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: isSuccess ? const Color(0xFF10B981) : const Color(0xFF1E293B),
+                    color: isSuccess ? const Color(0xFF10B981) : (isDark ? Colors.white : const Color(0xFF1E293B)),
                   ),
                 ),
               ],
