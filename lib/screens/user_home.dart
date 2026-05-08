@@ -31,8 +31,9 @@ class _UserHomeState extends State<UserHome> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Premium light grey (Slate 50)
+      backgroundColor: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC), // Premium light grey (Slate 50)
       body: Stack(
         children: [
           // Premium Gradient Header
@@ -66,14 +67,15 @@ class _UserHomeState extends State<UserHome> {
       bottomNavigationBar: Container(
         margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
+          color: isDark ? const Color(0xFF1F2937).withOpacity(0.9) : Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF1D4ED8).withOpacity(0.1),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
+            if (!isDark)
+              BoxShadow(
+                color: const Color(0xFF1D4ED8).withOpacity(0.1),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
           ],
         ),
         child: ClipRRect(
@@ -104,6 +106,10 @@ class _UserHomeState extends State<UserHome> {
     int index,
   ) {
     bool selected = currentIndex == index;
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    Color selectedColor = isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8);
+    Color unselectedColor = isDark ? Colors.white54 : const Color(0xFF64748B);
 
     return GestureDetector(
       onTap: () => setState(() => currentIndex = index),
@@ -114,7 +120,7 @@ class _UserHomeState extends State<UserHome> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFF3B82F6).withOpacity(0.1) // Soft blue bg
+              ? selectedColor.withOpacity(0.1) // Soft blue bg
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
@@ -127,7 +133,7 @@ class _UserHomeState extends State<UserHome> {
               child: Icon(
                 selected ? iconFilled : iconOutlined,
                 key: ValueKey<bool>(selected),
-                color: selected ? const Color(0xFF1D4ED8) : const Color(0xFF64748B), // Slate 500
+                color: selected ? selectedColor : unselectedColor,
                 size: 24,
               ),
             ),
@@ -135,8 +141,8 @@ class _UserHomeState extends State<UserHome> {
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF1D4ED8),
+                style: TextStyle(
+                  color: selectedColor,
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
                   letterSpacing: 0.3,
