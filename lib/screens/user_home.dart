@@ -1014,11 +1014,16 @@ class _HistoryTabState extends State<HistoryTab> {
               title: Text(
                 month,
 
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: isDark ? Colors.white : const Color(0xFF1E293B),
                 ),
               ),
+              textColor: isDark ? Colors.blue.shade300 : const Color(0xFF2563EB),
+              iconColor: isDark ? Colors.blue.shade300 : const Color(0xFF2563EB),
+              collapsedTextColor: isDark ? Colors.white70 : const Color(0xFF1E293B),
+              collapsedIconColor: isDark ? Colors.white70 : const Color(0xFF1E293B),
 
               children: monthJobs.map((job) {
                 var data = job.data() as Map<String, dynamic>;
@@ -1081,12 +1086,12 @@ class _HistoryTabState extends State<HistoryTab> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF), // Blue 50
+                              color: isDark ? const Color(0xFF1E3A8A).withOpacity(0.3) : const Color(0xFFEFF6FF), // Blue 50
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.work_outline,
-                              color: Color(0xFF2563EB), // Blue 600
+                              color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), // Blue 600
                               size: 20,
                             ),
                           ),
@@ -1095,10 +1100,10 @@ class _HistoryTabState extends State<HistoryTab> {
                             child: Text(
                               data['workerName'] ?? "Worker",
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 17,
-                                color: Color(0xFF1E293B), // Slate 800
+                                color: isDark ? Colors.white : const Color(0xFF1E293B), // Slate 800
                                 letterSpacing: 0.2,
                               ),
                             ),
@@ -1136,20 +1141,20 @@ class _HistoryTabState extends State<HistoryTab> {
                                         ),
                                     ],
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.calendar_today,
                                     size: 16,
-                                    color: Color(0xFF2563EB),
+                                    color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     "Date: ${data.containsKey('bookingDate') ? data['bookingDate'] : 'Not Selected'}",
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
-                                      color: Color(0xFF334155), // Slate 700
+                                      color: isDark ? Colors.white70 : const Color(0xFF334155), // Slate 700
                                     ),
                                   ),
                                 ),
@@ -1183,10 +1188,10 @@ class _HistoryTabState extends State<HistoryTab> {
                                 Expanded(
                                   child: Text(
                                     "Slot: ${data.containsKey('bookingSlot') ? data['bookingSlot'] : 'Not Selected'}",
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
-                                      color: Color(0xFF334155),
+                                      color: isDark ? Colors.white70 : const Color(0xFF334155),
                                     ),
                                   ),
                                 ),
@@ -1220,10 +1225,10 @@ class _HistoryTabState extends State<HistoryTab> {
                                 Expanded(
                                   child: Text(
                                     "Address: ${data.containsKey('address') ? data['address'] : 'Not Provided'}",
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 14,
-                                      color: Color(0xFF334155),
+                                      color: isDark ? Colors.white70 : const Color(0xFF334155),
                                     ),
                                   ),
                                 ),
@@ -1244,10 +1249,10 @@ class _HistoryTabState extends State<HistoryTab> {
 
                               overflow: TextOverflow.ellipsis,
 
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
 
-                                color: Colors.blueGrey,
+                                color: isDark ? Colors.blueGrey.shade300 : Colors.blueGrey,
 
                                 fontSize: 13,
                               ),
@@ -1259,12 +1264,12 @@ class _HistoryTabState extends State<HistoryTab> {
                           Text(
                             "₹${data['totalPrice'] ?? 0}",
 
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
 
                               fontSize: 18,
 
-                              color: Color(0xFF1D4ED8),
+                              color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
                             ),
                           ),
                         ],
@@ -1278,9 +1283,9 @@ class _HistoryTabState extends State<HistoryTab> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF7ED), // Orange 50
+                            color: isDark ? const Color(0xFF2C1600) : const Color(0xFFFFF7ED), // Orange 50
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFFFEDD5)), // Orange 100
+                            border: Border.all(color: isDark ? const Color(0xFF5E2B00) : const Color(0xFFFFEDD5)), // Orange 100
                             boxShadow: [
                               BoxShadow(
                                 color: const Color(0xFFF97316).withOpacity(0.05), // Orange 500
@@ -1291,11 +1296,11 @@ class _HistoryTabState extends State<HistoryTab> {
                           ),
                           child: Column(
                             children: [
-                              const Text(
+                              Text(
                                 "Share this OTP to start work",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFEA580C), // Orange 600
+                                  color: isDark ? const Color(0xFFFFB07C) : const Color(0xFFEA580C), // Orange 600
                                   fontSize: 13,
                                   letterSpacing: 0.3,
                                 ),
@@ -1304,7 +1309,7 @@ class _HistoryTabState extends State<HistoryTab> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
                                   borderRadius: BorderRadius.circular(12),
                                   boxShadow: [
                                     BoxShadow(
@@ -1316,11 +1321,11 @@ class _HistoryTabState extends State<HistoryTab> {
                                 ),
                                 child: Text(
                                   data['jobOtp'] ?? "---",
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 28,
                                     letterSpacing: 8,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFFC2410C), // Orange 700
+                                    color: isDark ? const Color(0xFFFFB07C) : const Color(0xFFC2410C), // Orange 700
                                   ),
                                 ),
                               ),
@@ -1333,7 +1338,7 @@ class _HistoryTabState extends State<HistoryTab> {
                         Builder(
                           builder: (context) {
                             final hoursController = _hoursControllers.putIfAbsent(
-                              job.id,
+                               job.id,
                               () => TextEditingController(),
                             );
                             final bool isJobLoading = _loadingJobs[job.id] ?? false;
@@ -1344,21 +1349,21 @@ class _HistoryTabState extends State<HistoryTab> {
                               padding: const EdgeInsets.all(15),
 
                               decoration: BoxDecoration(
-                                color: Colors.green.shade50,
+                                color: isDark ? const Color(0xFF062F16) : Colors.green.shade50,
 
                                 borderRadius: BorderRadius.circular(15),
 
-                                border: Border.all(color: Colors.green.shade200),
+                                border: Border.all(color: isDark ? const Color(0xFF14532D) : Colors.green.shade200),
                               ),
 
                               child: Column(
                                 children: [
-                                  const Text(
+                                  Text(
                                     "Work Started ✅",
 
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.green,
+                                      color: isDark ? const Color(0xFF4ADE80) : Colors.green,
                                       fontSize: 16,
                                     ),
                                   ),
@@ -1371,27 +1376,27 @@ class _HistoryTabState extends State<HistoryTab> {
                                     child: TextField(
                                       controller: hoursController,
                                       keyboardType: TextInputType.number,
-                                      style: const TextStyle(color: Colors.black87),
+                                      style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                                       decoration: InputDecoration(
                                         labelText: "Hours Worked",
                                         hintText: "Enter actual hours worked",
-                                        labelStyle: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w600),
-                                        hintStyle: TextStyle(color: Colors.grey.shade500),
-                                        prefixIcon: const Icon(Icons.timer_outlined, color: Colors.green),
+                                        labelStyle: TextStyle(color: isDark ? Colors.green.shade300 : Colors.green.shade700, fontWeight: FontWeight.w600),
+                                        hintStyle: TextStyle(color: isDark ? Colors.white54 : Colors.grey.shade500),
+                                        prefixIcon: Icon(Icons.timer_outlined, color: isDark ? Colors.green.shade300 : Colors.green),
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.green.shade200),
+                                          borderSide: BorderSide(color: isDark ? const Color(0xFF14532D) : Colors.green.shade200),
                                         ),
                                         enabledBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.green.shade200),
+                                          borderSide: BorderSide(color: isDark ? const Color(0xFF14532D) : Colors.green.shade200),
                                         ),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: Colors.green, width: 2),
+                                          borderSide: BorderSide(color: isDark ? const Color(0xFF4ADE80) : Colors.green, width: 2),
                                         ),
                                         filled: true,
-                                        fillColor: Colors.white,
+                                        fillColor: isDark ? const Color(0xFF111827) : Colors.white,
                                       ),
                                     ),
                                   ),
@@ -1497,21 +1502,21 @@ class _HistoryTabState extends State<HistoryTab> {
                           padding: const EdgeInsets.all(15),
 
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: isDark ? const Color(0xFF1E3A8A).withOpacity(0.3) : Colors.blue.shade50,
 
                             borderRadius: BorderRadius.circular(15),
 
-                            border: Border.all(color: Colors.blue.shade200),
+                            border: Border.all(color: isDark ? const Color(0xFF1E3A8A) : Colors.blue.shade200),
                           ),
 
                           child: Column(
                             children: [
-                              const Text(
+                              Text(
                                 "Job Completed ✅",
 
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue,
+                                  color: isDark ? const Color(0xFF60A5FA) : Colors.blue,
                                   fontSize: 16,
                                 ),
                               ),
@@ -1527,15 +1532,15 @@ class _HistoryTabState extends State<HistoryTab> {
 
                                 decoration: BoxDecoration(
                                   color: isPaid
-                                      ? Colors.green.shade50
-                                      : Colors.orange.shade50,
+                                      ? (isDark ? const Color(0xFF062F16) : Colors.green.shade50)
+                                      : (isDark ? const Color(0xFF2C1600) : Colors.orange.shade50),
 
                                   borderRadius: BorderRadius.circular(12),
 
                                   border: Border.all(
                                     color: isPaid
-                                        ? Colors.green.shade200
-                                        : Colors.orange.shade200,
+                                        ? (isDark ? const Color(0xFF14532D) : Colors.green.shade200)
+                                        : (isDark ? const Color(0xFF5E2B00) : Colors.orange.shade200),
                                   ),
                                 ),
 
@@ -1549,8 +1554,8 @@ class _HistoryTabState extends State<HistoryTab> {
                                           : Icons.pending,
 
                                       color: isPaid
-                                          ? Colors.green
-                                          : Colors.orange,
+                                          ? (isDark ? const Color(0xFF4ADE80) : Colors.green)
+                                          : (isDark ? const Color(0xFFFFB07C) : Colors.orange),
                                     ),
 
                                     const SizedBox(width: 10),
@@ -1564,8 +1569,8 @@ class _HistoryTabState extends State<HistoryTab> {
                                         fontWeight: FontWeight.bold,
 
                                         color: isPaid
-                                            ? Colors.green
-                                            : Colors.orange,
+                                            ? (isDark ? const Color(0xFF4ADE80) : Colors.green)
+                                            : (isDark ? const Color(0xFFFFB07C) : Colors.orange),
                                       ),
                                     ),
                                   ],
@@ -1591,10 +1596,9 @@ class _HistoryTabState extends State<HistoryTab> {
 
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [
-                                        Colors.amber.shade50,
-                                        Colors.orange.shade50,
-                                      ],
+                                      colors: isDark
+                                          ? [const Color(0xFF2C1600), const Color(0xFF1F1A00)]
+                                          : [Colors.amber.shade50, Colors.orange.shade50],
 
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
@@ -1603,7 +1607,7 @@ class _HistoryTabState extends State<HistoryTab> {
                                     borderRadius: BorderRadius.circular(18),
 
                                     border: Border.all(
-                                      color: Colors.amber.shade200,
+                                      color: isDark ? const Color(0xFF5E2B00) : Colors.amber.shade200,
                                     ),
 
                                     boxShadow: [
@@ -1625,7 +1629,7 @@ class _HistoryTabState extends State<HistoryTab> {
                                         padding: const EdgeInsets.all(10),
 
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
                                           shape: BoxShape.circle,
 
                                           boxShadow: [
@@ -1657,7 +1661,7 @@ class _HistoryTabState extends State<HistoryTab> {
                                           mainAxisSize: MainAxisSize.min,
 
                                           children: [
-                                            const Text(
+                                            Text(
                                               "Rate Experience",
 
                                               maxLines: 1,
@@ -1666,7 +1670,7 @@ class _HistoryTabState extends State<HistoryTab> {
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.bold,
-                                                color: Color(0xFF111827),
+                                                color: isDark ? Colors.white : const Color(0xFF111827),
                                               ),
                                             ),
 
@@ -1680,7 +1684,7 @@ class _HistoryTabState extends State<HistoryTab> {
 
                                               style: TextStyle(
                                                 fontSize: 11.5,
-                                                color: Colors.grey.shade700,
+                                                color: isDark ? Colors.white70 : Colors.grey.shade700,
                                                 height: 1.4,
                                               ),
                                             ),
@@ -1722,9 +1726,7 @@ class _HistoryTabState extends State<HistoryTab> {
                                           style: ElevatedButton.styleFrom(
                                             elevation: 0,
 
-                                            backgroundColor: const Color(
-                                              0xFF111827,
-                                            ),
+                                            backgroundColor: isDark ? const Color(0xFF374151) : const Color(0xFF111827),
 
                                             foregroundColor: Colors.white,
 
@@ -1760,21 +1762,21 @@ class _HistoryTabState extends State<HistoryTab> {
                                   width: double.infinity,
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF0FDF4), // Green 50
+                                    color: isDark ? const Color(0xFF062F16) : const Color(0xFFF0FDF4), // Green 50
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: const Color(0xFFDCFCE7)), // Green 100
+                                    border: Border.all(color: isDark ? const Color(0xFF14532D) : const Color(0xFFDCFCE7)), // Green 100
                                   ),
                                   child: Row(
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.all(8),
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
+                                        decoration: BoxDecoration(
+                                          color: isDark ? const Color(0xFF1F2937) : Colors.white,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.check_circle,
-                                          color: Color(0xFF10B981), // Emerald 500
+                                          color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF10B981), // Emerald 500
                                           size: 24,
                                         ),
                                       ),
@@ -1784,14 +1786,14 @@ class _HistoryTabState extends State<HistoryTab> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            const Text(
+                                            Text(
                                               "Review Submitted",
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 fontWeight: FontWeight.w700,
                                                 fontSize: 14,
-                                                color: Color(0xFF059669), // Emerald 600
+                                                color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF059669), // Emerald 600
                                               ),
                                             ),
                                             const SizedBox(height: 4),
@@ -1801,7 +1803,7 @@ class _HistoryTabState extends State<HistoryTab> {
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.grey.shade700,
+                                                color: isDark ? Colors.white70 : Colors.grey.shade700,
                                               ),
                                             ),
                                           ],
@@ -1843,6 +1845,9 @@ class _SearchTabState extends State<SearchTab> {
 
   /// ✅ PER WORKER DATE
   Map<String, DateTime?> selectedDates = {};
+
+  /// Filter skill
+  String? selectedSkill;
 
   @override
   Widget build(BuildContext context) {
@@ -1895,276 +1900,417 @@ class _SearchTabState extends State<SearchTab> {
               return const Center(child: Text("No workers found in your area"));
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+            // 1. Extract unique skills dynamically
+            var uniqueSkills = workers
+                .map((doc) {
+                  var data = doc.data() as Map<String, dynamic>;
+                  return (data['skill']?.toString() ?? '').trim();
+                })
+                .where((s) => s.isNotEmpty)
+                .toSet()
+                .toList();
 
-              itemCount: workers.length,
+            // 2. Filter workers by selectedSkill
+            var filteredWorkers = selectedSkill == null
+                ? workers
+                : workers.where((doc) {
+                    var data = doc.data() as Map<String, dynamic>;
+                    return (data['skill']?.toString() ?? '').trim() == selectedSkill;
+                  }).toList();
 
-              itemBuilder: (context, index) {
-                var worker = workers[index];
+            // 3. Sort workers: lowest price first, then highest rating first
+            filteredWorkers.sort((a, b) {
+              var aData = a.data() as Map<String, dynamic>;
+              var bData = b.data() as Map<String, dynamic>;
 
-                var data = worker.data() as Map<String, dynamic>;
+              double aPrice = (aData['charges'] ?? 0).toDouble();
+              double bPrice = (bData['charges'] ?? 0).toDouble();
 
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
+              int priceCompare = aPrice.compareTo(bPrice);
+              if (priceCompare != 0) {
+                return priceCompare;
+              }
 
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            WorkerDetailScreen(workerId: worker.id, data: data),
-                      ),
-                    );
-                  },
+              double aRating = (aData['averageRating'] ?? 0).toDouble();
+              double bRating = (bData['averageRating'] ?? 0).toDouble();
+              return bRating.compareTo(aRating);
+            });
 
+            return Column(
+              children: [
+                /// Skill dropdown filter
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 24),
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9), width: 1.5), // Slate 100
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0),
+                        width: 1.5,
+                      ),
                       boxShadow: [
                         if (!isDark)
                           BoxShadow(
-                            color: const Color(0xFF64748B).withOpacity(0.06), // Slate 500
-                            blurRadius: 24,
-                            offset: const Offset(0, 12),
+                            color: const Color(0xFF64748B).withOpacity(0.04),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
                           ),
                       ],
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// PROFILE IMAGE
-                        Container(
-                          padding: const EdgeInsets.all(2),
-
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-
-                            gradient: LinearGradient(
-                              colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                            ),
-                          ),
-
-                          child: CircleAvatar(
-                            radius: 30,
-
-                            backgroundColor: Colors.white,
-
-                            backgroundImage: data['profileImage'] != null
-                                ? MemoryImage(
-                                    base64Decode(data['profileImage']),
-                                  )
-                                : null,
-
-                            child: data['profileImage'] == null
-                                ? const Icon(
-                                    Icons.person,
-                                    color: Color(0xff1D4ED8),
-                                    size: 26,
-                                  )
-                                : null,
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButtonFormField<String>(
+                        value: selectedSkill,
+                        hint: Text(
+                          "All Skills",
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-
-                        const SizedBox(width: 15),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-
-                            children: [
-                              /// NAME
-                              Text(
-                                data['name'] ?? "No Name",
+                        dropdownColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.filter_list_rounded,
+                            color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB),
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        items: [
+                          DropdownMenuItem<String>(
+                            value: null,
+                            child: Text(
+                              "All Skills",
+                              style: TextStyle(
+                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              ),
+                            ),
+                          ),
+                          ...uniqueSkills.map((skill) {
+                            return DropdownMenuItem<String>(
+                              value: skill,
+                              child: Text(
+                                skill,
                                 style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                  color: isDark ? Colors.white : const Color(0xFF0F172A), // Slate 900
-                                  letterSpacing: 0.3,
+                                  color: isDark ? Colors.white : const Color(0xFF0F172A),
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                            );
+                          }),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            selectedSkill = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ),
 
-                              /// SKILL
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
+                Expanded(
+                  child: filteredWorkers.isEmpty
+                      ? Center(
+                          child: Text(
+                            "No workers available for this skill",
+                            style: TextStyle(
+                              color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+
+                          itemCount: filteredWorkers.length,
+
+                          itemBuilder: (context, index) {
+                            var worker = filteredWorkers[index];
+
+                            var data = worker.data() as Map<String, dynamic>;
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        WorkerDetailScreen(workerId: worker.id, data: data),
+                                  ),
+                                );
+                              },
+
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 24),
+                                padding: const EdgeInsets.all(24),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEFF6FF), // Blue 50
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFDBEAFE)), // Blue 100
+                                  color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                  borderRadius: BorderRadius.circular(28),
+                                  border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFF1F5F9), width: 1.5), // Slate 100
+                                  boxShadow: [
+                                    if (!isDark)
+                                      BoxShadow(
+                                        color: const Color(0xFF64748B).withOpacity(0.06), // Slate 500
+                                        blurRadius: 24,
+                                        offset: const Offset(0, 12),
+                                      ),
+                                  ],
                                 ),
-                                child: Text(
-                                  data['skill'] ?? "Skill",
-                                  style: const TextStyle(
-                                    color: Color(0xFF2563EB), // Blue 600
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    /// PROFILE IMAGE
+                                    Container(
+                                      padding: const EdgeInsets.all(2),
 
-                              /// RATING
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    color: Color(0xFFF59E0B), // Amber 500
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    "${((data['averageRating'] ?? 0).toDouble()).toStringAsFixed(1)}",
-                                    style: const TextStyle(
-                                      color: Color(0xFF475569), // Slate 600
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
 
-                              const SizedBox(height: 12),
+                                        gradient: LinearGradient(
+                                          colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                        ),
+                                      ),
 
-                              /// ================= SLOT DROPDOWN =================
-                              StreamBuilder<QuerySnapshot>(
-                                stream: db.getAllSlots(),
+                                      child: CircleAvatar(
+                                        radius: 30,
 
-                                builder: (context, slotSnapshot) {
-                                  if (!slotSnapshot.hasData) {
-                                    return const SizedBox();
-                                  }
+                                        backgroundColor: Colors.white,
 
-                                  var slots = slotSnapshot.data!.docs;
+                                        backgroundImage: data['profileImage'] != null
+                                            ? MemoryImage(
+                                                base64Decode(data['profileImage']),
+                                              )
+                                            : null,
 
-                                  return DropdownButtonFormField<String>(
-                                    value: selectedSlots[worker.id],
-
-                                    decoration: InputDecoration(
-                                      labelText: "Preferred Slot",
-
-                                      filled: true,
-
-                                      fillColor: isDark ? const Color(0xFF111827) : Colors.grey.shade50,
-
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 10,
-                                          ),
-
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
+                                        child: data['profileImage'] == null
+                                            ? const Icon(
+                                                Icons.person,
+                                                color: Color(0xff1D4ED8),
+                                                size: 26,
+                                              )
+                                            : null,
                                       ),
                                     ),
 
-                                    items: slots.map((doc) {
-                                      String slot = doc['slot'];
+                                    const SizedBox(width: 15),
 
-                                      return DropdownMenuItem<String>(
-                                        value: slot,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
 
-                                        child: Text(slot),
-                                      );
-                                    }).toList(),
-
-                                    onChanged: (value) {
-                                      setState(() {
-                                        selectedSlots[worker.id] = value;
-                                      });
-                                    },
-                                  );
-                                },
-                              ),
-
-                              const SizedBox(height: 12),
-
-                              /// ================= DATE PICKER =================
-                              ElevatedButton.icon(
-                                onPressed: () async {
-                                  final pickedDate = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime.now(),
-                                    lastDate: DateTime(2030),
-                                    builder: (context, child) {
-                                      return Theme(
-                                        data: Theme.of(context).copyWith(
-                                          colorScheme: const ColorScheme.light(
-                                            primary: Color(0xFF2563EB), // header background color
-                                            onPrimary: Colors.white, // header text color
-                                            onSurface: Color(0xFF0F172A), // body text color
+                                        children: [
+                                          /// NAME
+                                          Text(
+                                            data['name'] ?? "No Name",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 18,
+                                              color: isDark ? Colors.white : const Color(0xFF0F172A), // Slate 900
+                                              letterSpacing: 0.3,
+                                            ),
                                           ),
-                                        ),
-                                        child: child!,
-                                      );
-                                    },
-                                  );
+                                          const SizedBox(height: 6),
 
-                                  if (pickedDate != null) {
-                                    setState(() {
-                                      selectedDates[worker.id] = pickedDate;
-                                    });
-                                  }
-                                },
-                                icon: const Icon(Icons.calendar_today, size: 18),
-                                label: Text(
-                                  selectedDates[worker.id] == null
-                                      ? "Select Booking Date"
-                                      : selectedDates[worker.id]
-                                            .toString()
-                                            .split(" ")[0],
-                                  style: const TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2563EB), // Blue 600
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                    horizontal: 16,
-                                  ),
+                                          /// SKILL
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: isDark ? const Color(0xFF1E3A8A).withOpacity(0.3) : const Color(0xFFEFF6FF), // Blue 50
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: isDark ? const Color(0xFF1E3A8A) : const Color(0xFFDBEAFE)), // Blue 100
+                                            ),
+                                            child: Text(
+                                              data['skill'] ?? "Skill",
+                                              style: TextStyle(
+                                                color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF2563EB), // Blue 600
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+
+                                          /// RATING
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.star_rounded,
+                                                color: Color(0xFFF59E0B), // Amber 500
+                                                size: 18,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                "${((data['averageRating'] ?? 0).toDouble()).toStringAsFixed(1)}",
+                                                style: TextStyle(
+                                                  color: isDark ? Colors.white70 : const Color(0xFF475569), // Slate 600
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 12),
+
+                                          /// ================= SLOT DROPDOWN =================
+                                          StreamBuilder<QuerySnapshot>(
+                                            stream: db.getAllSlots(),
+
+                                            builder: (context, slotSnapshot) {
+                                              if (!slotSnapshot.hasData) {
+                                                return const SizedBox();
+                                              }
+
+                                              var slots = slotSnapshot.data!.docs;
+
+                                              return DropdownButtonFormField<String>(
+                                                value: selectedSlots[worker.id],
+                                                dropdownColor: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+
+                                                decoration: InputDecoration(
+                                                  labelText: "Preferred Slot",
+                                                  labelStyle: TextStyle(color: isDark ? Colors.blue.shade300 : const Color(0xFF2563EB)),
+
+                                                  filled: true,
+
+                                                  fillColor: isDark ? const Color(0xFF111827) : Colors.grey.shade50,
+
+                                                  contentPadding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                        vertical: 10,
+                                                      ),
+
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    borderSide: BorderSide(color: isDark ? const Color(0xFF374151) : Colors.grey.shade300),
+                                                  ),
+                                                  enabledBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    borderSide: BorderSide(color: isDark ? const Color(0xFF374151) : Colors.grey.shade300),
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
+                                                  ),
+                                                ),
+
+                                                items: slots.map((doc) {
+                                                  String slot = doc['slot'];
+
+                                                  return DropdownMenuItem<String>(
+                                                    value: slot,
+
+                                                    child: Text(slot),
+                                                  );
+                                                }).toList(),
+
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    selectedSlots[worker.id] = value;
+                                                  });
+                                                },
+                                              );
+                                            },
+                                          ),
+
+                                          const SizedBox(height: 12),
+
+                                          /// ================= DATE PICKER =================
+                                          ElevatedButton.icon(
+                                            onPressed: () async {
+                                              final pickedDate = await showDatePicker(
+                                                context: context,
+                                                initialDate: DateTime.now(),
+                                                firstDate: DateTime.now(),
+                                                lastDate: DateTime(2030),
+                                                builder: (context, child) {
+                                                  return Theme(
+                                                    data: Theme.of(context).copyWith(
+                                                      colorScheme: const ColorScheme.light(
+                                                        primary: Color(0xFF2563EB), // header background color
+                                                        onPrimary: Colors.white, // header text color
+                                                        onSurface: Color(0xFF0F172A), // body text color
+                                                      ),
+                                                    ),
+                                                    child: child!,
+                                                  );
+                                                },
+                                              );
+
+                                              if (pickedDate != null) {
+                                                setState(() {
+                                                  selectedDates[worker.id] = pickedDate;
+                                                });
+                                              }
+                                            },
+                                            icon: const Icon(Icons.calendar_today, size: 18),
+                                            label: Text(
+                                              selectedDates[worker.id] == null
+                                                  ? "Select Booking Date"
+                                                  : selectedDates[worker.id]
+                                                        .toString()
+                                                        .split(" ")[0],
+                                              style: const TextStyle(fontWeight: FontWeight.w600),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF2563EB), // Blue 600
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(
+                                                vertical: 14,
+                                                horizontal: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    const SizedBox(width: 10),
+
+                                    /// ARROW
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF111827) : Colors.grey.shade50,
+
+                                        shape: BoxShape.circle,
+
+                                        border: Border.all(color: isDark ? const Color(0xFF374151) : Colors.grey.shade200),
+                                      ),
+
+                                      child: Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 14,
+                                        color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-
-                        const SizedBox(width: 10),
-
-                        /// ARROW
-                        Container(
-                          padding: const EdgeInsets.all(8),
-
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-
-                            shape: BoxShape.circle,
-
-                            border: Border.all(color: Colors.grey.shade200),
-                          ),
-
-                          child: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 14,
-                            color: Color(0xFF1D4ED8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                ),
+              ],
             );
           },
         );
@@ -2333,10 +2479,10 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                         ),
                         Text(
                           charge == 0 ? "Not set" : "₹$charge / hr",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1D4ED8),
+                            color: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
                           ),
                         ),
                       ],
@@ -2543,6 +2689,7 @@ void showReviewDialog(
   Map<String, dynamic> job,
 ) {
   final db = DatabaseService();
+  bool isDark = Theme.of(context).brightness == Brightness.dark;
 
   int rating = 5;
   TextEditingController reviewController = TextEditingController();
@@ -2553,30 +2700,30 @@ void showReviewDialog(
     builder: (_) => StatefulBuilder(
       builder: (context, setState) {
         return AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
           elevation: 24,
           shadowColor: Colors.black.withOpacity(0.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
           contentPadding: const EdgeInsets.all(24),
-          title: const Center(
+          title: Center(
             child: Text(
               "Rate Experience",
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 20,
-                color: Color(0xFF0F172A),
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 "How was your service with this worker?",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF64748B), fontSize: 14),
               ),
               const SizedBox(height: 24),
               
@@ -2600,7 +2747,7 @@ void showReviewDialog(
                           size: 40,
                           color: index < rating
                               ? const Color(0xFFF59E0B) // Amber 500
-                              : const Color(0xFFE2E8F0), // Slate 200
+                              : (isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
                         ),
                       ),
                     ),
@@ -2612,14 +2759,19 @@ void showReviewDialog(
               TextField(
                 controller: reviewController,
                 maxLines: 3,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                 decoration: InputDecoration(
                   hintText: "Write your review...",
-                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                  hintStyle: TextStyle(color: isDark ? Colors.white54 : const Color(0xFF94A3B8)),
                   filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
+                  fillColor: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: isDark ? const Color(0xFF374151) : Colors.transparent),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: isDark ? const Color(0xFF374151) : Colors.transparent),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -2641,7 +2793,7 @@ void showReviewDialog(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text("Cancel", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                    child: Text("Cancel", style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF64748B), fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -2682,7 +2834,7 @@ void showReviewDialog(
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1D4ED8),
+                      backgroundColor: isDark ? const Color(0xFF2563EB) : const Color(0xFF1D4ED8),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 14),
