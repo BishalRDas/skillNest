@@ -1058,6 +1058,32 @@ class RequestTab extends StatelessWidget {
                             ),
                           ],
                         ),
+
+                        const SizedBox(height: 12),
+
+                        /// ADDRESS
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 18,
+                              color: Colors.redAccent,
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            Expanded(
+                              child: Text(
+                                "Address: ${(job.data() as Map<String, dynamic>).containsKey('address') ? job['address'] : 'Not Provided'}",
+
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -1146,7 +1172,11 @@ class WorkerHistoryTab extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        var jobs = snapshot.data!.docs;
+        var jobs = snapshot.data!.docs.where((job) {
+          var data = job.data() as Map<String, dynamic>;
+          var status = data['status'] ?? '';
+          return status == 'accepted' || status == 'completed';
+        }).toList();
 
         if (jobs.isEmpty) {
           return const Center(child: Text("No Active Jobs"));
@@ -1401,6 +1431,33 @@ class WorkerHistoryTab extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     "Preferred Slot: ${data.containsKey('bookingSlot') ? data['bookingSlot'] : 'Not Selected'}",
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            /// ADDRESS
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on_outlined,
+                                  size: 18,
+                                  color: Colors.redAccent,
+                                ),
+
+                                const SizedBox(width: 10),
+
+                                Expanded(
+                                  child: Text(
+                                    "Address: ${data.containsKey('address') ? data['address'] : 'Not Provided'}",
 
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,

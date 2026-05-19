@@ -937,8 +937,24 @@ class AccountTab extends StatelessWidget {
 /// ================= HISTORY =================
 /// 🔥 UPDATED WITH MONTH DROPDOWN + TIME
 
-class HistoryTab extends StatelessWidget {
+class HistoryTab extends StatefulWidget {
   const HistoryTab({super.key});
+
+  @override
+  State<HistoryTab> createState() => _HistoryTabState();
+}
+
+class _HistoryTabState extends State<HistoryTab> {
+  final Map<String, TextEditingController> _hoursControllers = {};
+  final Map<String, bool> _loadingJobs = {};
+
+  @override
+  void dispose() {
+    for (var controller in _hoursControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -953,7 +969,11 @@ class HistoryTab extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        var jobs = snapshot.data!.docs;
+        var jobs = snapshot.data!.docs.where((job) {
+          var data = job.data() as Map<String, dynamic>;
+          var status = data['status'] ?? '';
+          return status == 'accepted' || status == 'completed';
+        }).toList();
 
         if (jobs.isEmpty) {
           return const Center(child: Text("No Job History"));
@@ -1172,6 +1192,43 @@ class HistoryTab extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 14),
+                            /// ADDRESS
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      if (!isDark)
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.03),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 16,
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    "Address: ${data.containsKey('address') ? data['address'] : 'Not Provided'}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                      color: Color(0xFF334155),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
@@ -1273,88 +1330,162 @@ class HistoryTab extends StatelessWidget {
 
                       /// ✅ SHOW COMPLETE BUTTON AFTER OTP VERIFIED
                       if (otpVerified == true && status != "completed")
-                        Container(
-                          width: double.infinity,
+                        Builder(
+                          builder: (context) {
+                            final hoursController = _hoursControllers.putIfAbsent(
+                              job.id,
+                              () => TextEditingController(),
+                            );
+                            final bool isJobLoading = _loadingJobs[job.id] ?? false;
 
-                          padding: const EdgeInsets.all(15),
+                            return Container(
+                              width: double.infinity,
 
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                              padding: const EdgeInsets.all(15),
 
-                            borderRadius: BorderRadius.circular(15),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
 
-                            border: Border.all(color: Colors.green.shade200),
-                          ),
+                                borderRadius: BorderRadius.circular(15),
 
-                          child: Column(
-                            children: [
-                              const Text(
-                                "Work Started ✅",
-
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                  fontSize: 16,
-                                ),
+                                border: Border.all(color: Colors.green.shade200),
                               ),
 
-                              const SizedBox(height: 12),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    "Work Started ✅",
 
-                              SizedBox(
-                                width: double.infinity,
-
-                                child: ElevatedButton(
-                                  onPressed: () async {
-                                    showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
-                                    try {
-                                      await FirebaseFirestore.instance
-                                          .collection("jobs")
-                                          .doc(job.id)
-                                          .update({
-                                            "status": "completed",
-                                            "updatedAt":
-                                                FieldValue.serverTimestamp(),
-                                          });
-
-                                      await FirebaseFirestore.instance
-                                          .collection("workers")
-                                          .doc(data['workerId'])
-                                          .update({"isWorking": false});
-
-                                      if (context.mounted) {
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text("Job Completed ✅"),
-                                          ),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      if (context.mounted) {
-                                        Navigator.pop(context);
-                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                                      }
-                                    }
-                                  },
-
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    foregroundColor: Colors.white,
-
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                      fontSize: 16,
                                     ),
                                   ),
 
-                                  child: const Text("Complete Job"),
-                                ),
+                                  const SizedBox(height: 12),
+
+                                  /// ⏱ HOURS WORKED INPUT
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 12.0),
+                                    child: TextField(
+                                      controller: hoursController,
+                                      keyboardType: TextInputType.number,
+                                      style: const TextStyle(color: Colors.black87),
+                                      decoration: InputDecoration(
+                                        labelText: "Hours Worked",
+                                        hintText: "Enter actual hours worked",
+                                        labelStyle: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w600),
+                                        hintStyle: TextStyle(color: Colors.grey.shade500),
+                                        prefixIcon: const Icon(Icons.timer_outlined, color: Colors.green),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Colors.green.shade200),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Colors.green.shade200),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Colors.green, width: 2),
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(
+                                    width: double.infinity,
+
+                                    child: ElevatedButton(
+                                      onPressed: isJobLoading ? null : () async {
+                                        final hoursStr = hoursController.text.trim();
+                                        final int hours = int.tryParse(hoursStr) ?? 0;
+                                        if (hours <= 0) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text("Please enter valid hours worked"),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                          return;
+                                        }
+
+                                        setState(() {
+                                          _loadingJobs[job.id] = true;
+                                        });
+
+                                        try {
+                                          double charge = (data['charge'] ?? 0).toDouble();
+                                          double totalPrice = hours * charge;
+
+                                          await FirebaseFirestore.instance
+                                              .collection("jobs")
+                                              .doc(job.id)
+                                              .update({
+                                                "status": "completed",
+                                                "hours": hours,
+                                                "totalPrice": totalPrice,
+                                                "updatedAt":
+                                                    FieldValue.serverTimestamp(),
+                                              });
+
+                                          await FirebaseFirestore.instance
+                                              .collection("workers")
+                                              .doc(data['workerId'])
+                                              .update({"isWorking": false});
+
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text("Job Completed ✅"),
+                                              ),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                          }
+                                        } finally {
+                                          if (mounted) {
+                                            setState(() {
+                                              _loadingJobs[job.id] = false;
+                                            });
+                                          }
+                                        }
+                                      },
+
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        foregroundColor: Colors.white,
+
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+
+                                      child: isJobLoading
+                                          ? const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            )
+                                          : const Text("Complete Job"),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          }
                         ),
 
                       /// ✅ AFTER COMPLETION
@@ -2060,10 +2191,14 @@ class WorkerDetailScreen extends StatefulWidget {
 
 class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
   final db = DatabaseService();
-  final TextEditingController hoursController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
   bool isLoading = false;
 
-  double totalPrice = 0;
+  @override
+  void dispose() {
+    addressController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2234,7 +2369,7 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  /// ⏱ HOURS INPUT
+                  /// 📦 HIRE BUTTON SECTION
                   Container(
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1F2937) : Colors.white,
@@ -2252,18 +2387,22 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                     child: Column(
                       children: [
                         TextField(
-                          controller: hoursController,
-                          keyboardType: TextInputType.number,
+                          controller: addressController,
+                          keyboardType: TextInputType.text,
+                          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                           decoration: InputDecoration(
-                            labelText: "Enter Hours",
-                            prefixIcon: const Icon(Icons.timer_outlined, color: Color(0xFF2563EB)),
+                            labelText: "Work Address Location",
+                            hintText: "Enter the exact address for the worker",
+                            labelStyle: TextStyle(color: isDark ? Colors.blue.shade300 : const Color(0xFF2563EB), fontWeight: FontWeight.w600),
+                            hintStyle: TextStyle(color: isDark ? Colors.white54 : Colors.grey.shade500),
+                            prefixIcon: const Icon(Icons.location_on_outlined, color: Color(0xFF2563EB)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              borderSide: BorderSide(color: isDark ? const Color(0xFF374151) : const Color(0xFFE2E8F0)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -2272,74 +2411,33 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                             filled: true,
                             fillColor: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
                           ),
-                          onChanged: (val) {
-                            int hours = int.tryParse(val) ?? 0;
-                            setState(() {
-                              totalPrice = hours * charge;
-                            });
-                          },
                         ),
-
-                        const SizedBox(height: 20),
-
-                        /// 💵 TOTAL
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEFF6FF),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFDBEAFE)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                "Total Estimated:",
-                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E3A8A)),
-                              ),
-                              Text(
-                                "₹$totalPrice",
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1D4ED8),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        /// 📦 HIRE BUTTON
+                        const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
                             onPressed: isLoading ? null : () async {
-                              int hours = int.tryParse(hoursController.text) ?? 0;
-                              
-                              if (hours == 0) {
+                              final address = addressController.text.trim();
+                              if (address.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("Enter valid hours"), backgroundColor: Color(0xFFEF4444)),
+                                  const SnackBar(content: Text("Please enter the work address location"), backgroundColor: Color(0xFFEF4444)),
                                 );
                                 return;
                               }
-                              
+
                               setState(() => isLoading = true);
-
-                              double total = hours * charge;
-
                               try {
                                 await db.sendJobRequest(
                                   workerId: workerId,
                                   workerName: data['name'] ?? "Unknown",
                                   skill: data['skill'] ?? "General Service",
-                                  hours: hours,
+                                  hours: 0,
                                   charge: charge,
-                                  totalPrice: total,
+                                  totalPrice: 0.0,
                                   bookingDate: DateTime.now().toString().split(" ")[0],
                                   bookingSlot: "09:00-11:00",
+                                  address: address,
                                 );
 
                                 if (context.mounted) {

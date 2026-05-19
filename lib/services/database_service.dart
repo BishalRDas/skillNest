@@ -111,6 +111,7 @@ class DatabaseService {
     // ✅ NEW
     required String bookingDate,
     required String bookingSlot,
+    required String address,
   }) async {
     final user = _auth.currentUser!;
 
@@ -134,6 +135,7 @@ class DatabaseService {
       // ✅ BOOKING DATA
       "bookingDate": bookingDate,
       "bookingSlot": bookingSlot,
+      "address": address,
 
       "jobOtp": null,
       "otpVerified": false,
